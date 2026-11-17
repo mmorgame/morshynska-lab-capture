@@ -1,0 +1,2008 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Morshynska Lab — Capture Studio</title>
+  <script src="./tailwindcss.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #060B16;
+      overflow: hidden;
+    }
+    .font-mono {
+      font-family: 'JetBrains Mono', Consolas, monospace;
+    }
+    .drag-region {
+      -webkit-app-region: drag;
+    }
+    .no-drag {
+      -webkit-app-region: no-drag;
+    }
+
+    /* 2026 Flagship Window Shell — Hardware DirectComposition Accelerated */
+    .app-shell {
+      background:
+        radial-gradient(650px circle at 18% 12%, rgba(0, 245, 212, 0.08), transparent 60%),
+        radial-gradient(550px circle at 85% 20%, rgba(0, 187, 249, 0.08), transparent 60%),
+        radial-gradient(700px circle at 75% 88%, rgba(99, 102, 241, 0.07), transparent 65%),
+        linear-gradient(180deg, #090F1E 0%, #050912 100%);
+      box-shadow:
+        inset 0 0 0 1px rgba(148, 163, 184, 0.16),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.14);
+    }
+
+    /* Zero-Lag GPU Card with Specular Top Rim */
+    .glass-card {
+      background: linear-gradient(165deg, #111C35 0%, #0A1121 100%);
+      border: 1px solid rgba(148, 163, 184, 0.13);
+      box-shadow:
+        0 10px 24px -6px rgba(0, 0, 0, 0.65),
+        inset 0 1px 0 0 rgba(255, 255, 255, 0.12);
+      contain: layout style;
+    }
+
+    /* Tactile 3D Button - Inactive */
+    .btn-3d {
+      background: linear-gradient(180deg, #1D2A49 0%, #0E1629 100%);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      box-shadow:
+        0 3px 8px rgba(0, 0, 0, 0.45),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        inset 0 -2px 3px rgba(0, 0, 0, 0.4);
+      transition: transform 0.1s ease, border-color 0.1s ease;
+    }
+    .btn-3d:hover {
+      background: linear-gradient(180deg, #25365C 0%, #121D36 100%);
+      border-color: rgba(0, 245, 212, 0.42);
+      transform: translateY(-1px);
+    }
+    .btn-3d:active {
+      transform: translateY(1px);
+    }
+
+    /* Tactile 3D Button - Active Neon Cyan/Aqua */
+    .btn-3d-active {
+      background: linear-gradient(180deg, #0D3B49 0%, #0A2239 55%, #09182E 100%);
+      border: 1px solid rgba(0, 245, 212, 0.72);
+      box-shadow:
+        0 4px 14px -2px rgba(0, 245, 212, 0.25),
+        inset 0 1px 1px rgba(255, 255, 255, 0.32);
+      transition: transform 0.1s ease, border-color 0.1s ease;
+    }
+
+    /* Primary Action Pill Button */
+    .btn-accent-cyan {
+      background: linear-gradient(180deg, #00F5D4 0%, #00BBF9 100%);
+      color: #030914;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      box-shadow:
+        0 4px 14px -2px rgba(0, 245, 212, 0.4),
+        inset 0 1px 1px rgba(255, 255, 255, 0.65);
+      transition: transform 0.1s ease, filter 0.1s ease;
+    }
+    .btn-accent-cyan:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    /* Recessed Carved Input Well */
+    .input-well {
+      background: linear-gradient(180deg, #040811 0%, #070E1C 100%);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      box-shadow:
+        inset 0 2px 6px rgba(0, 0, 0, 0.8),
+        0 1px 0 rgba(255, 255, 255, 0.06);
+      transition: border-color 0.15s ease;
+    }
+    .input-well:focus-within, .input-well:hover {
+      border-color: rgba(0, 245, 212, 0.45);
+    }
+
+    /* Physical 3D Mechanical Keycap */
+    .keycap {
+      background: linear-gradient(180deg, #1E2B48 0%, #10182B 100%);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow:
+        0 3px 0 #040710,
+        0 4px 8px rgba(0, 0, 0, 0.65),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+    .keycap-cyan {
+      background: linear-gradient(180deg, rgba(0, 245, 212, 0.28) 0%, rgba(0, 140, 210, 0.22) 100%);
+      border: 1px solid rgba(0, 245, 212, 0.55);
+      box-shadow:
+        0 3px 0 #041421,
+        0 4px 10px rgba(0, 245, 212, 0.22),
+        inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+
+    /* Hover Tooltip "Клик для замены" on Hotkey Cards */
+    .hk-card {
+      position: relative;
+    }
+    .hk-tooltip {
+      position: absolute;
+      left: 50%;
+      top: -30px;
+      transform: translateX(-50%) translateY(4px);
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: #040914;
+      border: 1px solid rgba(0, 245, 212, 0.55);
+      color: #00F5D4;
+      font-size: 10px;
+      font-weight: 700;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.75);
+      transition: opacity 0.14s ease, transform 0.14s ease;
+      z-index: 40;
+    }
+    .hk-card:hover .hk-tooltip {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Modern 2026 Toggle Switch */
+    .toggle-checkbox:checked + .toggle-track {
+      background: linear-gradient(90deg, #00F5D4 0%, #00BBF9 100%);
+      border-color: rgba(255, 255, 255, 0.35);
+      box-shadow: 0 0 12px rgba(0, 245, 212, 0.4);
+    }
+    .toggle-checkbox:checked + .toggle-track .toggle-thumb {
+      transform: translateX(16px);
+      background: #040914;
+    }
+
+    @keyframes recPulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.45; transform: scale(1.18); }
+    }
+    .rec-dot { animation: recPulse 1.3s infinite ease-in-out; }
+    .crop-regulator {
+      box-shadow:
+        0 0 0 9999px rgba(2, 6, 14, 0.74),
+        0 0 24px rgba(0, 245, 212, 0.35);
+    }
+  </style>
+</head>
+<body class="p-0 m-0 select-none text-slate-100 bg-[#060B16]">
+  <div class="app-shell w-screen h-screen overflow-hidden flex flex-col relative">
+    
+    <!-- Custom Frameless Window Titlebar -->
+    <div class="drag-region flex items-center justify-between px-5 py-3.5 bg-[#040812] border-b border-white/[0.08]">
+      <div class="flex items-center gap-3.5">
+        <div class="relative rounded-xl p-0.5" style="box-shadow: 0 0 20px rgba(0, 245, 212, 0.25);">
+          <svg width="36" height="36" viewBox="0 0 64 64" fill="none">
+            <defs>
+              <linearGradient id="icon-bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#132342"/>
+                <stop offset="100%" stop-color="#060B16"/>
+              </linearGradient>
+              <linearGradient id="icon-rim" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#00F5D4"/>
+                <stop offset="50%" stop-color="#00BBF9"/>
+                <stop offset="100%" stop-color="#6366F1"/>
+              </linearGradient>
+            </defs>
+            <rect x="2" y="2" width="60" height="60" rx="15" fill="url(#icon-bg)" stroke="url(#icon-rim)" stroke-width="2.5"/>
+            <path d="M14 21V15H20M44 15H50V21M14 43V49H20M44 49H50V43" stroke="#00F5D4" stroke-width="2.4" stroke-linecap="round"/>
+            <circle cx="32" cy="32" r="12.5" stroke="url(#icon-rim)" stroke-width="2.4" fill="#050B16"/>
+            <path d="M32 23C32 23 26.8 29.6 26.8 33.4C26.8 36.3 29.1 38.6 32 38.6C34.9 38.6 37.2 36.3 37.2 33.4C37.2 29.6 32 23 32 23Z" fill="url(#icon-rim)"/>
+            <circle cx="44" cy="20" r="3.2" fill="#FF2A5F"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <span class="font-extrabold tracking-wider text-sm bg-gradient-to-r from-white via-slate-100 to-cyan-200 bg-clip-text text-transparent">MORSHYNSKA LAB</span>
+          </div>
+          <div class="text-xs text-slate-400 mt-0.5">Hardware NVENC Engine • RTX 3080 Ti • Zero-Lag Window & Region Capture</div>
+        </div>
+      </div>
+
+      <!-- Pixel Art Cameraman & Broadcast Banner ("CAPTURE STUDIO") in Header Right Zone -->
+      <div class="flex items-center gap-3 ml-auto mr-3 select-none pointer-events-none">
+        <div class="relative rounded-xl overflow-hidden border border-cyan-500/25 bg-[#060C1A] px-2.5 py-1 shadow-inner" style="box-shadow: inset 0 2px 10px rgba(0,0,0,0.85), 0 0 16px rgba(0, 245, 212, 0.08);">
+          <canvas id="pixel-studio-banner" width="430" height="40" style="width: 430px; height: 40px; image-rendering: pixelated; display: block;"></canvas>
+        </div>
+      </div>
+
+      <!-- Live Header Status Icon + Compact Top-Right Version Badge -->
+      <div class="no-drag flex items-center gap-3.5">
+        <div id="top-status-pill" class="flex items-center justify-center min-w-[38px] h-[38px]" style="transition: opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1), transform 0.65s cubic-bezier(0.4, 0, 0.2, 1);">
+          <!-- 1. Recording Active Icon -->
+          <svg id="hdr-icon-rec" class="hidden" width="38" height="38" viewBox="0 0 64 64" fill="none">
+            <rect x="3" y="3" width="58" height="58" rx="16" fill="#14080E" stroke="#FF2A5F" stroke-width="2.5"/>
+            <circle cx="32" cy="32" r="20" stroke="#FF2A5F" stroke-width="2.2" stroke-opacity="0.4" class="rec-dot"/>
+            <circle cx="32" cy="32" r="14" stroke="#FF2A5F" stroke-width="2.2" stroke-dasharray="6 4"/>
+            <circle cx="32" cy="32" r="8.5" fill="#FF2A5F"/>
+            <circle cx="29.5" cy="29.5" r="2.2" fill="#FFD1DC"/>
+          </svg>
+          <!-- 2. Recording Saved Icon -->
+          <svg id="hdr-icon-saved" class="hidden" width="38" height="38" viewBox="0 0 64 64" fill="none">
+            <rect x="3" y="3" width="58" height="58" rx="16" fill="#071712" stroke="#10B981" stroke-width="2.5"/>
+            <circle cx="32" cy="32" r="16" fill="#10B981" fill-opacity="0.18" stroke="#10B981" stroke-width="2.4"/>
+            <path d="M24.5 32.5L29.5 37.5L40 26.5" stroke="#00F5D4" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <!-- 3. Screenshot Saved Icon -->
+          <svg id="hdr-icon-shot" class="hidden" width="38" height="38" viewBox="0 0 64 64" fill="none">
+            <rect x="3" y="3" width="58" height="58" rx="16" fill="#07131F" stroke="#00BBF9" stroke-width="2.5"/>
+            <path d="M16 23V18C16 16.9 16.9 16 18 16H23M41 16H46C47.1 16 48 16.9 48 18V23M16 41V46C16 47.1 16.9 48 18 48H23M41 48H46C47.1 48 48 47.1 48 46V41" stroke="#00F5D4" stroke-width="2.6" stroke-linecap="round"/>
+            <circle cx="32" cy="32" r="8" stroke="#00BBF9" stroke-width="2.6"/>
+            <circle cx="32" cy="32" r="3.4" fill="#00F5D4"/>
+          </svg>
+          <!-- 4. Copied to Clipboard Icon -->
+          <svg id="hdr-icon-copy" class="hidden" width="38" height="38" viewBox="0 0 64 64" fill="none">
+            <rect x="3" y="3" width="58" height="58" rx="16" fill="#0A1026" stroke="#00F5D4" stroke-width="2.5"/>
+            <rect x="22" y="16" width="22" height="26" rx="4" stroke="#00BBF9" stroke-width="2.4" fill="#071324"/>
+            <path d="M18 24H16C14.3431 24 13 25.3431 13 27V47C13 48.6569 14.3431 50 16 50H34C35.6569 50 37 48.6569 37 47V45" stroke="#00F5D4" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M27.5 29.5L31.5 33.5L39 25.5" stroke="#00F5D4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <!-- Window Controls + Compact Version in Top-Right Corner -->
+        <div class="flex flex-col items-end gap-1">
+          <button onclick="checkUpdatesClick()" id="update-badge" class="px-2 py-0.5 rounded-md bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 hover:from-emerald-500/30 hover:to-cyan-500/30 text-emerald-300 border border-emerald-400/35 font-mono text-[10px] font-semibold leading-tight transition-colors shadow-sm" title="Проверить обновления">
+            v1.0.0
+          </button>
+          <div class="flex items-center gap-1 text-slate-400">
+            <button onclick="window.morshynskaAPI.windowControl('minimize')" class="w-6 h-6 rounded-md hover:bg-white/10 hover:text-white flex items-center justify-center text-xs transition-colors" title="Свернуть на панель задач">—</button>
+            <button onclick="window.morshynskaAPI.windowControl('close')" class="w-6 h-6 rounded-md hover:bg-rose-500/25 hover:text-rose-300 flex items-center justify-center text-xs transition-colors" title="Свернуть в трей (Выход — правой кнопкой в трее)">✕</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Optional Private Update Notification Bar -->
+    <div id="update-banner" class="no-drag hidden items-center justify-between px-5 py-2 bg-gradient-to-r from-cyan-950/90 via-emerald-950/90 to-slate-900 border-b border-cyan-400/40 text-xs">
+      <div class="flex items-center gap-2.5">
+        <span id="update-new-ver" class="px-2 py-0.5 rounded bg-cyan-400 text-slate-950 font-mono font-bold">NEW</span>
+        <span id="update-notes" class="text-white font-medium">Доступно обновление Morshynska Lab Capture</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="installUpdateClick()" id="btn-install-update" class="btn-accent-cyan px-3 py-1 rounded-lg font-bold">⚡ Обновить в 1 клик</button>
+        <button onclick="document.getElementById('update-banner').classList.add('hidden')" class="px-2 py-1 text-slate-400 hover:text-white">✕</button>
+      </div>
+    </div>
+
+    <!-- Main Body Grid (No scrollbar!) -->
+    <div class="no-drag grid grid-cols-12 gap-4 p-5 items-start flex-1 overflow-hidden">
+      
+      <!-- LEFT COLUMN (7 cols): Live Viewport + Source Selector -->
+      <div class="col-span-7 space-y-4">
+        
+        <!-- Live Game/Window Preview Box -->
+        <div id="preview-stage" style="aspect-ratio: 3440 / 1440; max-height: 310px; box-shadow: inset 0 3px 16px rgba(0,0,0,0.9), 0 12px 30px -6px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,245,212,0.16);" class="relative rounded-2xl overflow-hidden bg-[#03060C] w-full flex flex-col justify-between p-3.5">
+          <div id="preview-bg-grid" class="absolute inset-0 opacity-40 pointer-events-none" style="background-image: radial-gradient(rgba(0, 245, 212, 0.35) 1px, transparent 1px), radial-gradient(circle at 50% 50%, rgba(0, 187, 249, 0.14) 0%, rgba(4, 8, 18, 0.96) 75%); background-size: 22px 22px, 100% 100%;"></div>
+
+          <!-- Real Hardware-Accelerated Live Window Video Feed -->
+          <video id="live-window-video" autoplay muted playsinline class="hidden absolute inset-0 w-full h-full object-contain z-10 pointer-events-none bg-[#03060C]"></video>
+
+          <!-- Live Watermark / Captcha Preview Overlay (Shown when watermark is enabled in Settings!) -->
+          <img id="watermark-preview-img" src="" alt="" class="hidden absolute z-15 pointer-events-none select-none object-contain" style="right: 3%; bottom: 5%; width: 18%; opacity: 0.8;" />
+
+          <!-- Top Bar inside Preview (Visible ONLY in Default Unselected State!) -->
+          <div id="default-top-bar" class="relative z-10 flex items-center justify-between gap-3 pointer-events-none">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#070D19] border border-white/10 text-xs whitespace-nowrap min-w-0 shadow-lg">
+              <span class="w-2 h-2 rounded-full bg-slate-500 shrink-0"></span>
+              <span id="preview-target-label" class="font-semibold text-slate-300 truncate">Окно не выбрано</span>
+              <span id="preview-res-label" class="font-mono text-cyan-300 pl-2 border-l border-white/10 shrink-0">3440×1440</span>
+            </div>
+
+            <div id="ingame-hud" class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#070D19] border border-cyan-400/40 shadow-lg whitespace-nowrap shrink-0">
+              <span class="w-2 h-2 rounded-full bg-cyan-400 shrink-0" style="box-shadow: 0 0 6px #00F5D4;"></span>
+              <span class="text-xs font-bold text-cyan-300">STANDBY</span>
+              <span class="text-xs font-mono text-slate-400 pl-1.5 border-l border-white/10">NVENC</span>
+            </div>
+          </div>
+
+          <!-- Center Default Placeholder -->
+          <div id="center-window-info" class="relative z-10 flex flex-col items-center justify-center my-auto px-4 text-center pointer-events-none">
+            <div id="center-title" class="text-lg font-extrabold tracking-widest uppercase bg-gradient-to-b from-white to-slate-300 bg-clip-text text-transparent drop-shadow">ВЫБЕРИ ОКНО ДЛЯ ЗАХВАТА</div>
+            <div id="center-sub" class="text-xs font-mono text-cyan-300/80 mt-1">Разрешение дисплея: <span id="center-res-span">3440×1440</span></div>
+          </div>
+
+          <!-- INTERACTIVE REGION REGULATOR FRAME -->
+          <div id="crop-overlay-container" class="hidden absolute inset-0 z-20 overflow-hidden">
+            <div id="crop-box" style="left: 18%; top: 14%; width: 62%; height: 66%;" class="crop-regulator absolute border-2 border-cyan-400 rounded-lg cursor-move flex flex-col items-center justify-center">
+              <div class="absolute inset-0 grid grid-cols-3 grid-rows-3 pointer-events-none opacity-25">
+                <div class="border-r border-b border-cyan-300"></div>
+                <div class="border-r border-b border-cyan-300"></div>
+                <div class="border-b border-cyan-300"></div>
+                <div class="border-r border-b border-cyan-300"></div>
+                <div class="border-r border-b border-cyan-300"></div>
+                <div class="border-b border-cyan-300"></div>
+                <div class="border-r border-cyan-300"></div>
+                <div class="border-r border-cyan-300"></div>
+                <div></div>
+              </div>
+
+              <div class="relative z-10 px-2.5 py-0.5 rounded-md bg-slate-950/90 border border-cyan-400/60 text-xs font-mono text-cyan-300 shadow-lg pointer-events-none whitespace-nowrap">
+                <span id="crop-live-label">✥ 2132 × 950 px (X:620 Y:202)</span>
+              </div>
+
+              <div data-dir="nw" class="resize-handle absolute -top-2 -left-2 w-3.5 h-3.5 bg-cyan-400 border-2 border-slate-950 rounded-sm cursor-nwse-resize shadow"></div>
+              <div data-dir="ne" class="resize-handle absolute -top-2 -right-2 w-3.5 h-3.5 bg-cyan-400 border-2 border-slate-950 rounded-sm cursor-nesw-resize shadow"></div>
+              <div data-dir="sw" class="resize-handle absolute -bottom-2 -left-2 w-3.5 h-3.5 bg-cyan-400 border-2 border-slate-950 rounded-sm cursor-nesw-resize shadow"></div>
+              <div data-dir="se" class="resize-handle absolute -bottom-2 -right-2 w-3.5 h-3.5 bg-cyan-400 border-2 border-slate-950 rounded-sm cursor-nwse-resize shadow"></div>
+            </div>
+          </div>
+
+          <!-- Bottom Telemetry Bar inside Preview (Visible ONLY in Default Unselected State!) -->
+          <div id="default-bottom-bar" class="relative z-10 flex items-center justify-between px-3.5 py-2 rounded-lg bg-[#070D19] border border-white/10 text-xs font-mono whitespace-nowrap pointer-events-none shadow-lg">
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-400">FPS:</span>
+                <strong id="telemetry-fps" class="text-cyan-300">MAX ∞</strong>
+              </div>
+              <span class="text-slate-700">•</span>
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-400">КОДЕК:</span>
+                <strong class="text-emerald-300">NVENC CQP 16</strong>
+              </div>
+              <span class="text-slate-700">•</span>
+              <div class="flex items-center gap-1.5">
+                <span class="text-slate-400">ПОТОК:</span>
+                <strong class="text-slate-200">LOSSLESS</strong>
+              </div>
+            </div>
+            <div id="telemetry-timer" class="text-slate-200 font-bold pl-3 border-l border-white/10">00:00:00</div>
+          </div>
+        </div>
+
+        <!-- 1. Window / Region / Screen Capture Selector -->
+        <div class="glass-card p-4 rounded-2xl space-y-3.5">
+          <div class="flex items-center justify-between whitespace-nowrap">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-4 rounded-full bg-gradient-to-b from-cyan-400 to-blue-500"></span>
+              <span class="text-xs font-bold uppercase tracking-wider text-cyan-300">1. Режим и выбор источника съёмки</span>
+            </div>
+            <button onclick="refreshSourcesList()" class="px-2.5 py-1 rounded-lg bg-white/[0.04] hover:bg-white/[0.09] border border-white/10 text-xs text-cyan-300 flex items-center gap-1.5 transition-colors">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+              <span>Обновить список окон</span>
+            </button>
+          </div>
+
+          <!-- 3 Tactile 3D Capture Mode Cards with Centered Text -->
+          <div class="grid grid-cols-3 gap-2.5">
+            <button onclick="selectMode('window')" id="mode-window" class="btn-3d-active py-3 px-2.5 rounded-xl flex items-center justify-center gap-2">
+              <svg class="text-cyan-300 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>
+              <span class="text-xs font-bold text-white whitespace-nowrap">Конкретное окно</span>
+            </button>
+
+            <button onclick="selectMode('region')" id="mode-region" class="btn-3d py-3 px-2.5 rounded-xl flex items-center justify-center gap-2">
+              <svg class="text-cyan-400 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+              <span class="text-xs font-bold text-slate-100 whitespace-nowrap">Область съёмки</span>
+            </button>
+
+            <button onclick="selectMode('screen')" id="mode-screen" class="btn-3d py-3 px-2.5 rounded-xl flex items-center justify-center gap-2">
+              <svg class="text-cyan-400 shrink-0" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              <span class="text-xs font-bold text-slate-100 whitespace-nowrap">Весь экран</span>
+            </button>
+          </div>
+
+          <!-- Active Window Dropdown in Recessed Well -->
+          <div id="window-picker-row" class="space-y-1.5">
+            <label class="text-xs text-slate-400 font-medium">Выбери открытое окно для захвата:</label>
+            <div class="input-well rounded-xl px-3 py-2 flex items-center gap-2">
+              <svg class="text-cyan-400 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>
+              <select id="window-select" onchange="onWindowSelectChange(this.value)" class="w-full bg-transparent text-xs text-white font-semibold focus:outline-none cursor-pointer">
+                <option value="" class="bg-[#080E1A]" selected>— Не выбрано (Выбери окно из списка) —</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Region Frame Coordinates & 3D Action Button -->
+          <div class="flex items-center justify-between gap-3 pt-1 whitespace-nowrap">
+            <div class="text-xs text-slate-400">
+              Кадр области (<span id="base-res-label">от 3440×1440</span>): <strong id="region-coords" class="font-mono text-cyan-300">2132×950 (X:620 Y:202)</strong>
+            </div>
+            <button onclick="selectMode('region')" class="btn-accent-cyan px-3.5 py-1.5 rounded-xl text-xs font-extrabold flex items-center gap-1.5 shrink-0">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>
+              <span>Область съёмки (<span id="btn-region-hk">F8</span>)</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN (5 cols): Uncapped FPS + Output Paths + Format & Web Optimizer -->
+      <div class="col-span-5 space-y-4">
+        
+        <!-- 2. FPS & Quality Settings -->
+        <div class="glass-card p-4 rounded-2xl space-y-3.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-1.5 h-4 rounded-full bg-gradient-to-b from-cyan-400 to-emerald-400"></span>
+              <span class="text-xs font-bold uppercase tracking-wider text-cyan-300">2. Частота кадров (Без лимита FPS)</span>
+            </div>
+            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 font-mono shadow-inner">NVENC GPU</span>
+          </div>
+
+          <!-- 5 Tactile 3D FPS Buttons -->
+          <div class="grid grid-cols-5 gap-2">
+            <button onclick="selectFpsBtn(this, 60)" class="fps-btn btn-3d py-2 rounded-xl text-xs font-mono font-semibold text-slate-200">60</button>
+            <button onclick="selectFpsBtn(this, 120)" class="fps-btn btn-3d py-2 rounded-xl text-xs font-mono font-semibold text-slate-200">120</button>
+            <button onclick="selectFpsBtn(this, 165)" class="fps-btn btn-3d py-2 rounded-xl text-xs font-mono font-semibold text-slate-200">165</button>
+            <button onclick="selectFpsBtn(this, 240)" class="fps-btn btn-3d py-2 rounded-xl text-xs font-mono font-semibold text-slate-200">240</button>
+            <button onclick="selectFpsBtn(this, 0)" class="fps-btn btn-3d-active py-2 rounded-xl text-xs font-mono font-extrabold text-cyan-300">MAX ∞</button>
+          </div>
+          <div class="text-xs text-slate-400 leading-relaxed">Режим <strong class="text-cyan-300">MAX ∞ (Без ограничений)</strong> пишет каждый кадр напрямую с частотой игры без искусственного лока FPS.</div>
+
+          <!-- Modern 2026 Illuminated Pill Toggles for Audio -->
+          <div class="grid grid-cols-2 gap-2.5 pt-0.5">
+            <label class="btn-3d flex items-center justify-between px-3 py-2.5 rounded-xl text-xs cursor-pointer">
+              <span class="flex items-center gap-2 font-medium text-slate-200 whitespace-nowrap">
+                <svg class="text-cyan-400 shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+                <span>Звук системы</span>
+              </span>
+              <input id="chk-sys-audio" type="checkbox" checked onchange="saveSettings()" class="toggle-checkbox sr-only" />
+              <div class="toggle-track w-9 h-5 rounded-full bg-slate-900 border border-white/15 p-0.5 transition-all shrink-0 flex items-center">
+                <div class="toggle-thumb w-3.5 h-3.5 rounded-full bg-slate-400 transition-transform"></div>
+              </div>
+            </label>
+
+            <label class="btn-3d flex items-center justify-between px-3 py-2.5 rounded-xl text-xs cursor-pointer">
+              <span class="flex items-center gap-2 font-medium text-slate-200 whitespace-nowrap">
+                <svg class="text-cyan-400 shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+                <span>Микрофон</span>
+              </span>
+              <input id="chk-mic-audio" type="checkbox" checked onchange="saveSettings()" class="toggle-checkbox sr-only" />
+              <div class="toggle-track w-9 h-5 rounded-full bg-slate-900 border border-white/15 p-0.5 transition-all shrink-0 flex items-center">
+                <div class="toggle-thumb w-3.5 h-3.5 rounded-full bg-slate-400 transition-transform"></div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 3. Output Folder Paths -->
+        <div class="glass-card p-4 rounded-2xl space-y-3">
+          <div class="flex items-center gap-2">
+            <span class="w-1.5 h-4 rounded-full bg-gradient-to-b from-cyan-400 to-blue-500"></span>
+            <span class="text-xs font-bold uppercase tracking-wider text-cyan-300">3. Пути сохранения файлов</span>
+          </div>
+          
+          <div class="space-y-1.5">
+            <label class="text-xs text-slate-300 flex items-center justify-between">
+              <span class="flex items-center gap-1.5 font-medium">
+                <svg class="text-cyan-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m10 9 5 3-5 3v-6Z"/></svg>
+                <span>Папка для записей (<strong id="path-video-ext" class="font-mono text-cyan-300">.mp4</strong>):</span>
+              </span>
+              <span onclick="openDir('video')" class="text-cyan-400 hover:text-cyan-300 hover:underline cursor-pointer font-medium">Открыть папку ↗</span>
+            </label>
+            <div class="flex gap-2">
+              <input id="input-video-dir" type="text" onchange="saveSettings()" value="D:\work\VIDEO NVIDIA\Morshynska_Captures" class="input-well w-full px-3 py-2 rounded-xl text-xs font-mono text-slate-200 focus:outline-none" />
+              <button onclick="browseDir('video')" class="btn-3d px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-200 shrink-0">Обзор…</button>
+            </div>
+          </div>
+
+          <div class="space-y-1.5">
+            <label class="text-xs text-slate-300 flex items-center justify-between">
+              <span class="flex items-center gap-1.5 font-medium">
+                <svg class="text-cyan-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                <span>Папка для скриншотов (<strong id="path-shot-ext" class="font-mono text-cyan-300">.png</strong>):</span>
+              </span>
+              <span onclick="openDir('shot')" class="text-cyan-400 hover:text-cyan-300 hover:underline cursor-pointer font-medium">Открыть папку ↗</span>
+            </label>
+            <div class="flex gap-2">
+              <input id="input-shot-dir" type="text" onchange="saveSettings()" value="D:\work\VIDEO NVIDIA\Morshynska_Screenshots" class="input-well w-full px-3 py-2 rounded-xl text-xs font-mono text-slate-200 focus:outline-none" />
+              <button onclick="browseDir('shot')" class="btn-3d px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-200 shrink-0">Обзор…</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Output Format (WEBM / GIF / VIDEO) + Optimize Toggle + 0..100 Compression Slider -->
+        <div class="glass-card p-4 rounded-2xl space-y-3">
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="selectOutputFormat('webm')" id="fmt-webm" class="btn-3d py-2.5 px-3 rounded-xl flex items-center justify-center">
+              <span class="text-xs font-extrabold font-mono text-slate-200">WEBM</span>
+            </button>
+            <button onclick="selectOutputFormat('gif')" id="fmt-gif" class="btn-3d py-2.5 px-3 rounded-xl flex items-center justify-center">
+              <span class="text-xs font-extrabold font-mono text-slate-200">GIF</span>
+            </button>
+            <button onclick="selectOutputFormat('video')" id="fmt-video" class="btn-3d-active py-2.5 px-3 rounded-xl flex items-center justify-center">
+              <span class="text-xs font-extrabold font-mono text-cyan-300">VIDEO</span>
+            </button>
+          </div>
+
+          <!-- Optimize Toggle Row -->
+          <div class="flex items-center pt-0.5">
+            <label class="flex items-center gap-2.5 cursor-pointer">
+              <input id="opt-toggle" type="checkbox" onchange="toggleOptimizeSlider(this.checked)" class="toggle-checkbox sr-only" />
+              <div class="toggle-track w-9 h-5 rounded-full bg-slate-900 border border-white/15 p-0.5 transition-all shrink-0 flex items-center">
+                <div class="toggle-thumb w-3.5 h-3.5 rounded-full bg-slate-400 transition-transform"></div>
+              </div>
+              <span class="text-xs font-bold text-slate-200">Оптимизировать</span>
+            </label>
+          </div>
+
+          <!-- Compression Quality Slider -->
+          <div id="opt-slider-wrap" class="opacity-40 pointer-events-none transition-opacity space-y-1">
+            <div class="flex items-center justify-between text-[11px] font-mono text-slate-400">
+              <span>0 (Оригинал)</span>
+              <span id="opt-level-readout" class="text-cyan-300 font-bold">Сжатие: 65%</span>
+              <span>100 (Макс. сжатие)</span>
+            </div>
+            <input id="opt-slider" type="range" min="0" max="100" value="65" disabled oninput="updateCompressionReadout(this.value)" onchange="saveSettings()" class="w-full h-2 rounded-lg appearance-none bg-slate-900 border border-white/10 accent-cyan-400 cursor-pointer" />
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BOTTOM FULL-WIDTH BAR (12 cols): Gear Settings Icon + 4 Hotkey Buttons with "Клик для замены" hover tooltip -->
+      <div class="col-span-12 glass-card px-4 py-3 rounded-2xl flex items-center justify-between gap-3.5">
+        <!-- Settings Gear Button (Replaces old "4. ГОРЯЧИЕ КЛАВИШИ" text!) -->
+        <button onclick="openSettingsModal()" class="btn-3d w-11 h-11 rounded-xl flex items-center justify-center text-cyan-300 hover:text-white shrink-0" title="Настройки">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+
+        <!-- 4 Horizontal Keycap Cards with "Клик для замены" Hover Tooltip -->
+        <div class="grid grid-cols-4 gap-3 flex-1 text-xs">
+          <div onclick="startRebind('record', event)" class="hk-card btn-3d flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer">
+            <span class="hk-tooltip">Клик для замены</span>
+            <span class="text-slate-200 font-medium whitespace-nowrap">Запись / Стоп</span>
+            <kbd id="kbd-record" class="keycap px-2.5 py-1 rounded-md font-mono font-bold text-white">F9</kbd>
+          </div>
+          <div onclick="startRebind('region', event)" class="hk-card btn-3d flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer">
+            <span class="hk-tooltip">Клик для замены</span>
+            <span class="text-slate-200 font-medium whitespace-nowrap">Область съёмки</span>
+            <kbd id="kbd-region" class="keycap px-2.5 py-1 rounded-md font-mono font-bold text-cyan-300">F8</kbd>
+          </div>
+          <div onclick="startRebind('screenshot', event)" class="hk-card btn-3d flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer">
+            <span class="hk-tooltip">Клик для замены</span>
+            <span class="text-slate-200 font-medium whitespace-nowrap">Скриншот</span>
+            <kbd id="kbd-screenshot" class="keycap px-2.5 py-1 rounded-md font-mono font-bold text-cyan-300">F10</kbd>
+          </div>
+          <div onclick="startRebind('copy', event)" class="hk-card btn-3d-active flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer">
+            <span class="hk-tooltip">Клик для замены</span>
+            <span class="text-cyan-300 font-extrabold whitespace-nowrap">COPY</span>
+            <kbd id="kbd-copy" class="keycap-cyan px-2.5 py-1 rounded-md font-mono font-bold text-white whitespace-nowrap">Ctrl + F10</kbd>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SETTINGS MODAL (Opened by Gear Button ⚙️) -->
+    <div id="settings-modal" class="no-drag hidden absolute inset-0 z-50 bg-[#030710]/85 flex items-center justify-center p-6">
+      <div class="glass-card w-full max-w-xl rounded-2xl p-5 space-y-4 border border-cyan-500/30 shadow-2xl">
+        <div class="flex items-center justify-between pb-3 border-b border-white/10">
+          <div class="flex items-center gap-2.5">
+            <span class="w-2 h-5 rounded-full bg-gradient-to-b from-cyan-400 to-blue-500"></span>
+            <span class="text-sm font-extrabold uppercase tracking-wider text-white">Настройки Morshynska Lab</span>
+          </div>
+          <button onclick="closeSettingsModal()" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-rose-500/20 hover:text-rose-300 flex items-center justify-center text-xs">✕</button>
+        </div>
+
+        <div class="space-y-3.5 text-xs">
+          <!-- 1. Monitor Selector -->
+          <div class="space-y-1.5">
+            <label class="text-slate-300 font-semibold flex items-center gap-2">
+              <svg class="text-cyan-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+              <span>Выбор монитора (для захвата экрана и области):</span>
+            </label>
+            <div class="input-well rounded-xl px-3 py-2">
+              <select id="settings-display-select" onchange="onDisplaySelectChange(this.value)" class="w-full bg-transparent text-xs text-white font-semibold focus:outline-none cursor-pointer">
+                <option value="" class="bg-[#080E1A]">Монитор 1 — 3440×1440 (Основной)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 2. Microphone Input Device Selector -->
+          <div class="space-y-1.5">
+            <label class="text-slate-300 font-semibold flex items-center gap-2">
+              <svg class="text-cyan-400" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+              <span>Устройство записи микрофона:</span>
+            </label>
+            <div class="input-well rounded-xl px-3 py-2">
+              <select id="settings-mic-select" onchange="onMicSelectChange(this.value)" class="w-full bg-transparent text-xs text-white font-semibold focus:outline-none cursor-pointer">
+                <option value="default" class="bg-[#080E1A]">Микрофон по умолчанию (Системный)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 3 & 4. Toggles: Auto-start with Windows + Show FPS on Screen (Hidden on Recording) -->
+          <div class="grid grid-cols-2 gap-3 pt-1">
+            <label class="btn-3d flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer">
+              <span class="font-semibold text-slate-200">Запускать с Windows</span>
+              <input id="chk-autostart" type="checkbox" onchange="onAutoStartChange(this.checked)" class="toggle-checkbox sr-only" />
+              <div class="toggle-track w-9 h-5 rounded-full bg-slate-900 border border-white/15 p-0.5 transition-all shrink-0 flex items-center">
+                <div class="toggle-thumb w-3.5 h-3.5 rounded-full bg-slate-400 transition-transform"></div>
+              </div>
+            </label>
+
+            <label class="btn-3d flex items-center justify-between px-3.5 py-2.5 rounded-xl cursor-pointer" title="Виден только тебе на мониторе, не попадает на запись">
+              <span class="font-semibold text-slate-200">Показывать FPS</span>
+              <input id="chk-show-fps" type="checkbox" onchange="onShowFpsChange(this.checked)" class="toggle-checkbox sr-only" />
+              <div class="toggle-track w-9 h-5 rounded-full bg-slate-900 border border-white/15 p-0.5 transition-all shrink-0 flex items-center">
+                <div class="toggle-thumb w-3.5 h-3.5 rounded-full bg-slate-400 transition-transform"></div>
+              </div>
+            </label>
+          </div>
+
+          <!-- 5. Watermark Image Overlay on Recordings -->
+          <div class="p-3.5 rounded-xl bg-[#070D19] border border-white/10 space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="flex items-center gap-2.5 cursor-pointer">
+                <input id="chk-watermark" type="checkbox" onchange="onWatermarkToggle(this.checked)" class="toggle-checkbox sr-only" />
+                <div class="toggle-track w-9 h-5 rounded-full bg-slate-900 border border-white/15 p-0.5 transition-all shrink-0 flex items-center">
+                  <div class="toggle-thumb w-3.5 h-3.5 rounded-full bg-slate-400 transition-transform"></div>
+                </div>
+                <span class="font-bold text-cyan-300">Водяной знак</span>
+              </label>
+
+              <button onclick="pickWatermarkImage()" class="btn-3d px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-200 flex items-center gap-1.5">
+                <svg class="text-cyan-400" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+                <span>Загрузить изображение…</span>
+              </button>
+            </div>
+
+            <div id="watermark-file-label" class="text-[11px] font-mono text-slate-400 truncate">Файл не выбран</div>
+
+            <!-- Placement Position Buttons -->
+            <div class="grid grid-cols-5 gap-1.5">
+              <button onclick="setWatermarkPos('top-left')" id="wm-pos-top-left" class="wm-pos-btn btn-3d py-1.5 rounded-lg font-semibold text-[11px] text-slate-300">↖ Верх-Л</button>
+              <button onclick="setWatermarkPos('top-right')" id="wm-pos-top-right" class="wm-pos-btn btn-3d py-1.5 rounded-lg font-semibold text-[11px] text-slate-300">↗ Верх-П</button>
+              <button onclick="setWatermarkPos('center')" id="wm-pos-center" class="wm-pos-btn btn-3d py-1.5 rounded-lg font-semibold text-[11px] text-slate-300">✥ Центр</button>
+              <button onclick="setWatermarkPos('bottom-left')" id="wm-pos-bottom-left" class="wm-pos-btn btn-3d py-1.5 rounded-lg font-semibold text-[11px] text-slate-300">↙ Низ-Л</button>
+              <button onclick="setWatermarkPos('bottom-right')" id="wm-pos-bottom-right" class="wm-pos-btn btn-3d-active py-1.5 rounded-lg font-semibold text-[11px] text-cyan-300">↘ Низ-П</button>
+            </div>
+
+            <!-- Opacity & Scale Sliders -->
+            <div class="grid grid-cols-2 gap-3 pt-1">
+              <div class="space-y-1">
+                <div class="flex justify-between text-[11px] font-mono text-slate-400">
+                  <span>Непрозрачность:</span>
+                  <strong id="wm-opacity-label" class="text-cyan-300">80%</strong>
+                </div>
+                <input id="wm-opacity-slider" type="range" min="5" max="100" value="80" oninput="onWatermarkOpacity(this.value)" class="w-full h-1.5 rounded-lg appearance-none bg-slate-900 border border-white/10 accent-cyan-400 cursor-pointer" />
+              </div>
+
+              <div class="space-y-1">
+                <div class="flex justify-between text-[11px] font-mono text-slate-400">
+                  <span>Размер на кадре:</span>
+                  <strong id="wm-scale-label" class="text-cyan-300">18%</strong>
+                </div>
+                <input id="wm-scale-slider" type="range" min="5" max="50" value="18" oninput="onWatermarkScale(this.value)" class="w-full h-1.5 rounded-lg appearance-none bg-slate-900 border border-white/10 accent-cyan-400 cursor-pointer" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-white/10">
+          <button onclick="closeSettingsModal(); openOnboardingModal();" class="btn-3d px-3.5 py-2 rounded-xl text-xs font-semibold text-cyan-300 hover:text-white flex items-center gap-1.5">
+            <span>📖 Открыть мини-гайд</span>
+          </button>
+          <button onclick="closeSettingsModal()" class="btn-accent-cyan px-5 py-2 rounded-xl text-xs font-extrabold">Готово</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FIRST-RUN ONBOARDING MINI-GUIDE MODAL (5 Slides, Same Compact Size as Settings Modal!) -->
+    <div id="onboarding-modal" class="no-drag hidden absolute inset-0 z-50 bg-[#030710]/88 flex items-center justify-center p-6">
+      <div class="glass-card w-full max-w-xl rounded-2xl p-5 space-y-4 border border-cyan-500/35 shadow-2xl">
+        <!-- Header -->
+        <div class="flex items-center justify-between pb-3 border-b border-white/10">
+          <div class="flex items-center gap-2.5">
+            <span class="w-2 h-5 rounded-full bg-gradient-to-b from-cyan-400 to-blue-500"></span>
+            <span class="text-sm font-extrabold uppercase tracking-wider text-white">Добро пожаловать в Morshynska Lab Capture</span>
+            <span id="guide-step-badge" class="px-2 py-0.5 rounded-md bg-cyan-500/15 border border-cyan-400/30 font-mono text-[11px] font-bold text-cyan-300">1 / 5</span>
+          </div>
+          <button onclick="closeOnboardingModal()" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-rose-500/20 hover:text-rose-300 flex items-center justify-center text-xs" title="Закрыть гайд">✕</button>
+        </div>
+
+        <!-- Slide Container -->
+        <div class="min-h-[250px] flex flex-col justify-between">
+          <!-- SLIDE 1: 3 Capture Modes -->
+          <div class="guide-slide space-y-3" data-slide="0">
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-[#070D19] border border-cyan-500/25">
+              <div class="w-11 h-11 rounded-xl bg-cyan-500/15 border border-cyan-400/35 flex items-center justify-center text-cyan-300 shrink-0">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 20h8"/></svg>
+              </div>
+              <div>
+                <div class="text-sm font-extrabold text-white">1. Три режима захвата без потери FPS</div>
+                <div class="text-xs text-cyan-300/90">Аппаратный движок NVIDIA NVENC — нулевая нагрузка на игру</div>
+              </div>
+            </div>
+            <div class="space-y-2 text-xs text-slate-300 leading-relaxed px-1">
+              <div class="flex items-start gap-2">
+                <span class="text-cyan-400 font-bold">•</span>
+                <div><strong class="text-white">Конкретное окно:</strong> выбери игру или программу из выпадающего списка — пишется только само окно, даже если поверх открыт браузер или чат.</div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-cyan-400 font-bold">•</span>
+                <div><strong class="text-white">Область съёмки (F8):</strong> прямо в окне предпросмотра появляется интерактивная рамка. Потяни за её уголки или сдвинь мышкой, чтобы записывать или скринить только нужный фрагмент экрана.</div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-cyan-400 font-bold">•</span>
+                <div><strong class="text-white">Весь экран:</strong> мгновенный захват всего выбранного монитора в родном разрешении.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SLIDE 2: FPS, Formats & Optimization -->
+          <div class="guide-slide hidden space-y-3" data-slide="1">
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-[#070D19] border border-cyan-500/25">
+              <div class="w-11 h-11 rounded-xl bg-cyan-500/15 border border-cyan-400/35 flex items-center justify-center text-cyan-300 shrink-0 font-mono font-extrabold text-xs">MAX∞</div>
+              <div>
+                <div class="text-sm font-extrabold text-white">2. Частота кадров, форматы и сжатие</div>
+                <div class="text-xs text-cyan-300/90">Прямая запись в MP4, WEBM или GIF с гибкой оптимизацией</div>
+              </div>
+            </div>
+            <div class="space-y-2 text-xs text-slate-300 leading-relaxed px-1">
+              <div class="flex items-start gap-2">
+                <span class="text-cyan-400 font-bold">•</span>
+                <div><strong class="text-white">Частота кадров (60 / 120 / 165 / 240 / MAX ∞):</strong> режим <span class="text-cyan-300 font-mono">MAX ∞</span> снимает искусственный лимит и пишет кадры напрямую с частотой твоего монитора.</div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-cyan-400 font-bold">•</span>
+                <div><strong class="text-white">Форматы вывода:</strong> переключай <span class="text-cyan-300 font-mono">VIDEO (.mp4)</span>, <span class="text-cyan-300 font-mono">WEBM (.webm / .webp)</span> или <span class="text-cyan-300 font-mono">GIF (.gif)</span> — приложение само сконвертирует запись на лету.</div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-cyan-400 font-bold">•</span>
+                <div><strong class="text-white">Тумблер «Оптимизировать»:</strong> включи ползунок сжатия (`0–100%`), если нужно уменьшить вес файла для быстрой пересылки в Telegram или Discord.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SLIDE 3: Instant COPY & Annotation Studio -->
+          <div class="guide-slide hidden space-y-3" data-slide="2">
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-[#070D19] border border-cyan-500/25">
+              <div class="w-11 h-11 rounded-xl bg-cyan-500/15 border border-cyan-400/35 flex items-center justify-center text-cyan-300 shrink-0">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              </div>
+              <div>
+                <div class="text-sm font-extrabold text-white">3. Быстрый скрин в буфер (COPY) и рисование</div>
+                <div class="text-xs text-cyan-300/90">Выделяй область, рисуй пометки и сразу вставляй через Ctrl + V</div>
+              </div>
+            </div>
+            <div class="space-y-2 text-xs text-slate-300 leading-relaxed px-1">
+              <div class="flex items-start gap-2">
+                <span class="text-cyan-400 font-bold">•</span>
+                <div><strong class="text-white">Мгновенно в буфер обмена:</strong> нажми клавишу <span class="text-cyan-300 font-mono">COPY</span> и выдели участок экрана — он автоматически попадает в буфер обмена (сразу жми <span class="text-cyan-300 font-mono">Ctrl + V</span> в любом чате).</div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-cyan-400 font-bold">•</span>
+                <div><strong class="text-white">Инструменты разметки:</strong> <span class="text-white">Карандаш</span>, <span class="text-white">Ластик</span> (стирает только твои линии, не трогая сам скрин), <span class="text-white">Стрелка</span>, <span class="text-white">Круг</span>, <span class="text-white">Рамка</span> и палитра <span class="text-cyan-300">RGB</span> с подтверждением «ОК».</div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-cyan-400 font-bold">•</span>
+                <div><strong class="text-white">Иконка дискеты (Сохранить):</strong> позволяет сразу сохранить выделенный фрагмент в любую выбранную папку на диске.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SLIDE 4: Settings Gear & Watermark -->
+          <div class="guide-slide hidden space-y-3" data-slide="3">
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-[#070D19] border border-cyan-500/25">
+              <div class="w-11 h-11 rounded-xl bg-cyan-500/15 border border-cyan-400/35 flex items-center justify-center text-cyan-300 shrink-0">
+                <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9"/></svg>
+              </div>
+              <div>
+                <div class="text-sm font-extrabold text-white">4. Настройки (⚙️), Водяной знак и Чистый FPS</div>
+                <div class="text-xs text-cyan-300/90">Кнопка шестерёнки в левом нижнем углу окна</div>
+              </div>
+            </div>
+            <div class="space-y-2 text-xs text-slate-300 leading-relaxed px-1">
+              <div class="flex items-start gap-2">
+                <span class="text-cyan-400 font-bold">•</span>
+                <div><strong class="text-white">Выбор монитора и микрофона:</strong> переключай активный дисплей (если у тебя 2+ монитора) и выбирай конкретную гарнитуру для записи голоса.</div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-cyan-400 font-bold">•</span>
+                <div><strong class="text-white">Показывать FPS (Невидимый на записи):</strong> счётчик FPS и мини-иконки статуса в правом верхнем углу экрана видны только тебе и <strong class="text-cyan-300">никогда не попадают на видео или скриншоты</strong>.</div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-cyan-400 font-bold">•</span>
+                <div><strong class="text-white">Водяной знак:</strong> загрузи свой логотип/картинку, выбери угол размещения, размер и прозрачность — он автоматически вшивается в твои фрапсы.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SLIDE 5: Hotkeys & System Tray -->
+          <div class="guide-slide hidden space-y-3" data-slide="4">
+            <div class="flex items-center gap-3 p-3 rounded-xl bg-[#070D19] border border-cyan-500/25">
+              <div class="w-11 h-11 rounded-xl bg-cyan-500/15 border border-cyan-400/35 flex items-center justify-center text-cyan-300 shrink-0 font-mono font-extrabold text-xs">PrtSc</div>
+              <div>
+                <div class="text-sm font-extrabold text-white">5. Смена горячих клавиш и работа в трее</div>
+                <div class="text-xs text-cyan-300/90">Полная готовность в фоне в любой момент игры</div>
+              </div>
+            </div>
+            <div class="space-y-2 text-xs text-slate-300 leading-relaxed px-1">
+              <div class="flex items-start gap-2">
+                <span class="text-cyan-400 font-bold">•</span>
+                <div><strong class="text-white">Смена любой клавиши в 1 клик:</strong> просто кликни по любой из 4 нижних кнопок (<span class="text-cyan-300 font-mono">Запись / Стоп</span>, <span class="text-cyan-300 font-mono">Область</span>, <span class="text-cyan-300 font-mono">Скриншот</span>, <span class="text-cyan-300 font-mono">COPY</span>) и нажми удобную клавишу (включая <span class="text-white font-mono">PrtSc</span>).</div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-cyan-400 font-bold">•</span>
+                <div><strong class="text-white">Фоновый режим в системном трее:</strong> нажатие на крестик <span class="text-white font-mono">✕</span> не выключает программу, а аккуратно прячет её в трей возле часов, чтобы горячие клавиши всегда работали в игре.</div>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-cyan-400 font-bold">•</span>
+                <div><strong class="text-white">Полный выход:</strong> чтобы полностью закрыть приложение, нажми правой кнопкой мыши по иконке Morshynska Lab в трее и выбери <span class="text-rose-300 font-semibold">«Выход»</span>.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Navigation: Dots + Prev / Next / Finish -->
+        <div class="flex items-center justify-between pt-3 border-t border-white/10">
+          <!-- Dots -->
+          <div class="flex items-center gap-2">
+            <button onclick="goToGuideSlide(0)" class="guide-dot w-6 h-2 rounded-full bg-cyan-400 transition-all"></button>
+            <button onclick="goToGuideSlide(1)" class="guide-dot w-2 h-2 rounded-full bg-slate-700 hover:bg-slate-500 transition-all"></button>
+            <button onclick="goToGuideSlide(2)" class="guide-dot w-2 h-2 rounded-full bg-slate-700 hover:bg-slate-500 transition-all"></button>
+            <button onclick="goToGuideSlide(3)" class="guide-dot w-2 h-2 rounded-full bg-slate-700 hover:bg-slate-500 transition-all"></button>
+            <button onclick="goToGuideSlide(4)" class="guide-dot w-2 h-2 rounded-full bg-slate-700 hover:bg-slate-500 transition-all"></button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button onclick="closeOnboardingModal()" class="px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white transition-colors">Пропустить</button>
+            <button id="guide-prev-btn" onclick="stepGuideSlide(-1)" class="btn-3d px-3.5 py-1.5 rounded-xl text-xs font-semibold text-slate-200 hidden">← Назад</button>
+            <button id="guide-next-btn" onclick="stepGuideSlide(1)" class="btn-accent-cyan px-4 py-1.5 rounded-xl text-xs font-extrabold">Далее →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Offscreen Canvas for Region Cropping, Watermark Compositing & Lossless Screenshot Capture -->
+  <canvas id="offscreen-canvas" class="hidden"></canvas>
+
+  <script>
+    const dpr = window.devicePixelRatio || 1;
+    let SCREEN_W = Math.round((window.screen && window.screen.width ? window.screen.width * dpr : 3440));
+    let SCREEN_H = Math.round((window.screen && window.screen.height ? window.screen.height * dpr : 1440));
+
+    let currentMode = 'window';
+    let savedModeBeforeCopy = 'window';
+    let outputFormat = 'video';
+    let targetFps = 0;
+    let optimizeEnabled = false;
+    let compressionLevel = 65;
+
+    let selectedDisplayId = '';
+    let selectedMicDeviceId = 'default';
+    let watermarkEnabled = false;
+    let watermarkDataUrl = '';
+    let watermarkPos = 'bottom-right';
+    let watermarkOpacity = 80;
+    let watermarkScale = 18;
+    let watermarkImgObj = null;
+
+    let availableSources = [];
+    let activeSourceId = '';
+    let liveStream = null;
+    let mediaRecorder = null;
+    let isRecording = false;
+    let recStartTime = 0;
+    let recTimerInterval = null;
+    let cropDrawLoopId = null;
+
+    let rebindingAction = null;
+
+    function updateResolutionLabels(w, h) {
+      SCREEN_W = w;
+      SCREEN_H = h;
+      const stageEl = document.getElementById('preview-stage');
+      stageEl.style.aspectRatio = `${SCREEN_W} / ${SCREEN_H}`;
+      document.getElementById('preview-res-label').textContent = `${SCREEN_W}×${SCREEN_H}`;
+      document.getElementById('center-res-span').textContent = `${SCREEN_W}×${SCREEN_H}`;
+      document.getElementById('base-res-label').textContent = `от ${SCREEN_W}×${SCREEN_H}`;
+      updateCropMetrics();
+    }
+
+    async function initApp() {
+      updateResolutionLabels(SCREEN_W, SCREEN_H);
+      const cfg = await window.morshynskaAPI.getConfig();
+      if (cfg) {
+        if (cfg.displayWidth && cfg.displayHeight) {
+          updateResolutionLabels(cfg.displayWidth, cfg.displayHeight);
+        }
+        if (cfg.videoDir) document.getElementById('input-video-dir').value = cfg.videoDir;
+        if (cfg.shotDir) document.getElementById('input-shot-dir').value = cfg.shotDir;
+        if (cfg.outputFormat) selectOutputFormat(cfg.outputFormat, false);
+        if (typeof cfg.optimize === 'boolean') {
+          document.getElementById('opt-toggle').checked = cfg.optimize;
+          toggleOptimizeSlider(cfg.optimize, false);
+        }
+        if (typeof cfg.compression === 'number') {
+          document.getElementById('opt-slider').value = cfg.compression;
+          updateCompressionReadout(cfg.compression);
+        }
+        if (cfg.selectedDisplayId) selectedDisplayId = cfg.selectedDisplayId;
+        if (cfg.selectedMicDeviceId) selectedMicDeviceId = cfg.selectedMicDeviceId;
+        if (typeof cfg.autoStartWindows === 'boolean') {
+          document.getElementById('chk-autostart').checked = cfg.autoStartWindows;
+        }
+        if (typeof cfg.showFpsOverlay === 'boolean') {
+          document.getElementById('chk-show-fps').checked = cfg.showFpsOverlay;
+        }
+        if (typeof cfg.watermarkEnabled === 'boolean') {
+          watermarkEnabled = cfg.watermarkEnabled;
+          document.getElementById('chk-watermark').checked = watermarkEnabled;
+        }
+        if (cfg.watermarkPath) {
+          document.getElementById('watermark-file-label').textContent = cfg.watermarkPath;
+        }
+        if (cfg.watermarkDataUrl) {
+          watermarkDataUrl = cfg.watermarkDataUrl;
+          loadWatermarkImageObj(watermarkDataUrl);
+        }
+        if (cfg.watermarkPos) setWatermarkPos(cfg.watermarkPos, false);
+        if (typeof cfg.watermarkOpacity === 'number') {
+          watermarkOpacity = cfg.watermarkOpacity;
+          document.getElementById('wm-opacity-slider').value = watermarkOpacity;
+          document.getElementById('wm-opacity-label').textContent = `${watermarkOpacity}%`;
+        }
+        if (typeof cfg.watermarkScale === 'number') {
+          watermarkScale = cfg.watermarkScale;
+          document.getElementById('wm-scale-slider').value = watermarkScale;
+          document.getElementById('wm-scale-label').textContent = `${watermarkScale}%`;
+        }
+        updateWatermarkPreviewOverlay();
+
+        if (cfg.hotkeys) {
+          if (cfg.hotkeys.record) document.getElementById('kbd-record').textContent = formatDisplayHotkey(cfg.hotkeys.record);
+          if (cfg.hotkeys.region) {
+            document.getElementById('kbd-region').textContent = formatDisplayHotkey(cfg.hotkeys.region);
+            document.getElementById('btn-region-hk').textContent = formatDisplayHotkey(cfg.hotkeys.region);
+          }
+          if (cfg.hotkeys.screenshot) document.getElementById('kbd-screenshot').textContent = formatDisplayHotkey(cfg.hotkeys.screenshot);
+          if (cfg.hotkeys.copy) document.getElementById('kbd-copy').textContent = formatDisplayHotkey(cfg.hotkeys.copy);
+        }
+
+        // Automatically open the Onboarding Mini-Guide on the very first run on a PC!
+        if (!cfg.onboardingCompleted) {
+          openOnboardingModal();
+        }
+      }
+      await refreshSourcesList();
+    }
+
+    let currentGuideSlide = 0;
+    const TOTAL_GUIDE_SLIDES = 5;
+
+    function openOnboardingModal() {
+      goToGuideSlide(0);
+      document.getElementById('onboarding-modal').classList.remove('hidden');
+    }
+
+    function closeOnboardingModal() {
+      document.getElementById('onboarding-modal').classList.add('hidden');
+      window.morshynskaAPI.saveConfig({ onboardingCompleted: true });
+    }
+
+    function goToGuideSlide(idx) {
+      currentGuideSlide = Math.max(0, Math.min(TOTAL_GUIDE_SLIDES - 1, idx));
+      document.querySelectorAll('.guide-slide').forEach((el, i) => {
+        el.classList.toggle('hidden', i !== currentGuideSlide);
+      });
+      document.querySelectorAll('.guide-dot').forEach((dot, i) => {
+        dot.className = (i === currentGuideSlide)
+          ? 'guide-dot w-6 h-2 rounded-full bg-cyan-400 transition-all'
+          : 'guide-dot w-2 h-2 rounded-full bg-slate-700 hover:bg-slate-500 transition-all';
+      });
+      document.getElementById('guide-step-badge').textContent = `${currentGuideSlide + 1} / ${TOTAL_GUIDE_SLIDES}`;
+      const prevBtn = document.getElementById('guide-prev-btn');
+      const nextBtn = document.getElementById('guide-next-btn');
+      if (currentGuideSlide === 0) {
+        prevBtn.classList.add('hidden');
+      } else {
+        prevBtn.classList.remove('hidden');
+      }
+      if (currentGuideSlide === TOTAL_GUIDE_SLIDES - 1) {
+        nextBtn.textContent = 'Начать работу ✓';
+      } else {
+        nextBtn.textContent = 'Далее →';
+      }
+    }
+
+    function stepGuideSlide(delta) {
+      if (currentGuideSlide === TOTAL_GUIDE_SLIDES - 1 && delta > 0) {
+        closeOnboardingModal();
+        return;
+      }
+      goToGuideSlide(currentGuideSlide + delta);
+    }
+
+    function loadWatermarkImageObj(dataUrl) {
+      if (!dataUrl) {
+        watermarkImgObj = null;
+        return;
+      }
+      const img = new Image();
+      img.onload = () => {
+        watermarkImgObj = img;
+        updateWatermarkPreviewOverlay();
+      };
+      img.src = dataUrl;
+    }
+
+    function updateWatermarkPreviewOverlay() {
+      const el = document.getElementById('watermark-preview-img');
+      if (!watermarkEnabled || !watermarkDataUrl) {
+        el.classList.add('hidden');
+        return;
+      }
+      el.src = watermarkDataUrl;
+      el.classList.remove('hidden');
+      el.style.width = `${watermarkScale}%`;
+      el.style.opacity = String(watermarkOpacity / 100);
+      el.style.left = '';
+      el.style.right = '';
+      el.style.top = '';
+      el.style.bottom = '';
+      el.style.transform = '';
+
+      if (watermarkPos === 'top-left') { el.style.left = '3%'; el.style.top = '5%'; }
+      else if (watermarkPos === 'top-right') { el.style.right = '3%'; el.style.top = '5%'; }
+      else if (watermarkPos === 'bottom-left') { el.style.left = '3%'; el.style.bottom = '5%'; }
+      else if (watermarkPos === 'center') {
+        el.style.left = '50%'; el.style.top = '50%';
+        el.style.transform = 'translate(-50%, -50%)';
+      } else {
+        el.style.right = '3%'; el.style.bottom = '5%';
+      }
+    }
+
+    // Settings Modal Functions
+    async function openSettingsModal() {
+      const displays = await window.morshynskaAPI.getDisplays();
+      const dispSel = document.getElementById('settings-display-select');
+      dispSel.innerHTML = '';
+      displays.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id;
+        opt.textContent = d.label;
+        opt.className = 'bg-[#080E1A]';
+        if (String(d.id) === String(selectedDisplayId) || (!selectedDisplayId && d.isPrimary)) {
+          opt.selected = true;
+        }
+        dispSel.appendChild(opt);
+      });
+
+      // Populate Microphone Devices
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const mics = devices.filter(d => d.kind === 'audioinput');
+        const micSel = document.getElementById('settings-mic-select');
+        micSel.innerHTML = '';
+        mics.forEach((m, idx) => {
+          const opt = document.createElement('option');
+          opt.value = m.deviceId;
+          opt.textContent = m.label || `Микрофон #${idx + 1}`;
+          opt.className = 'bg-[#080E1A]';
+          if (m.deviceId === selectedMicDeviceId) opt.selected = true;
+          micSel.appendChild(opt);
+        });
+      } catch (e) {}
+
+      document.getElementById('settings-modal').classList.remove('hidden');
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settings-modal').classList.add('hidden');
+    }
+
+    async function onDisplaySelectChange(dispId) {
+      selectedDisplayId = dispId;
+      const cfg = await window.morshynskaAPI.saveConfig({ selectedDisplayId: dispId });
+      const displays = await window.morshynskaAPI.getDisplays();
+      const chosen = displays.find(d => String(d.id) === String(dispId));
+      if (chosen) {
+        updateResolutionLabels(chosen.width, chosen.height);
+      }
+      await refreshSourcesList();
+      if (currentMode === 'screen') selectMode('screen');
+    }
+
+    function onMicSelectChange(micId) {
+      selectedMicDeviceId = micId;
+      window.morshynskaAPI.saveConfig({ selectedMicDeviceId: micId });
+    }
+
+    function onAutoStartChange(enabled) {
+      window.morshynskaAPI.setAutoStart(enabled);
+    }
+
+    function onShowFpsChange(enabled) {
+      window.morshynskaAPI.saveConfig({ showFpsOverlay: enabled });
+    }
+
+    function onWatermarkToggle(enabled) {
+      watermarkEnabled = enabled;
+      updateWatermarkPreviewOverlay();
+      window.morshynskaAPI.saveConfig({ watermarkEnabled: enabled });
+    }
+
+    async function pickWatermarkImage() {
+      const res = await window.morshynskaAPI.selectWatermarkImage();
+      if (res && res.dataUrl) {
+        watermarkDataUrl = res.dataUrl;
+        watermarkEnabled = true;
+        document.getElementById('chk-watermark').checked = true;
+        document.getElementById('watermark-file-label').textContent = res.path;
+        loadWatermarkImageObj(watermarkDataUrl);
+      }
+    }
+
+    function setWatermarkPos(pos, persist = true) {
+      watermarkPos = pos;
+      ['top-left', 'top-right', 'center', 'bottom-left', 'bottom-right'].forEach(p => {
+        const btn = document.getElementById('wm-pos-' + p);
+        if (!btn) return;
+        btn.className = p === pos
+          ? 'wm-pos-btn btn-3d-active py-1.5 rounded-lg font-semibold text-[11px] text-cyan-300'
+          : 'wm-pos-btn btn-3d py-1.5 rounded-lg font-semibold text-[11px] text-slate-300';
+      });
+      updateWatermarkPreviewOverlay();
+      if (persist) window.morshynskaAPI.saveConfig({ watermarkPos: pos });
+    }
+
+    function onWatermarkOpacity(val) {
+      watermarkOpacity = parseInt(val, 10) || 80;
+      document.getElementById('wm-opacity-label').textContent = `${watermarkOpacity}%`;
+      updateWatermarkPreviewOverlay();
+      window.morshynskaAPI.saveConfig({ watermarkOpacity });
+    }
+
+    function onWatermarkScale(val) {
+      watermarkScale = parseInt(val, 10) || 18;
+      document.getElementById('wm-scale-label').textContent = `${watermarkScale}%`;
+      updateWatermarkPreviewOverlay();
+      window.morshynskaAPI.saveConfig({ watermarkScale });
+    }
+
+    async function refreshSourcesList() {
+      availableSources = await window.morshynskaAPI.getSources();
+      const select = document.getElementById('window-select');
+      const prevVal = select.value;
+      select.innerHTML = '<option value="" class="bg-[#080E1A]">— Не выбрано (Выбери окно из списка) —</option>';
+
+      availableSources.forEach(src => {
+        const opt = document.createElement('option');
+        opt.value = src.id;
+        opt.textContent = src.label;
+        opt.className = 'bg-[#080E1A]';
+        select.appendChild(opt);
+      });
+
+      if (prevVal && availableSources.some(s => s.id === prevVal)) {
+        select.value = prevVal;
+      }
+    }
+
+    function setPreviewOverlaysVisible(visible) {
+      const topBar = document.getElementById('default-top-bar');
+      const centerInfo = document.getElementById('center-window-info');
+      const bottomBar = document.getElementById('default-bottom-bar');
+      const videoEl = document.getElementById('live-window-video');
+
+      if (visible) {
+        topBar.classList.remove('hidden');
+        centerInfo.classList.remove('hidden');
+        bottomBar.classList.remove('hidden');
+        videoEl.classList.add('hidden');
+      } else {
+        topBar.classList.add('hidden');
+        centerInfo.classList.add('hidden');
+        bottomBar.classList.add('hidden');
+        videoEl.classList.remove('hidden');
+      }
+    }
+
+    async function attachLiveStream(sourceId) {
+      if (!sourceId) {
+        if (liveStream) {
+          liveStream.getTracks().forEach(t => t.stop());
+          liveStream = null;
+        }
+        activeSourceId = '';
+        setPreviewOverlaysVisible(true);
+        return;
+      }
+
+      try {
+        if (liveStream && activeSourceId === sourceId) {
+          setPreviewOverlaysVisible(false);
+          return;
+        }
+        if (liveStream) {
+          liveStream.getTracks().forEach(t => t.stop());
+        }
+        const maxFps = targetFps > 0 ? targetFps : 240;
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            mandatory: {
+              chromeMediaSource: 'desktop',
+              chromeMediaSourceId: sourceId,
+              maxWidth: 3840,
+              maxHeight: 2160,
+              maxFrameRate: maxFps
+            }
+          }
+        });
+        liveStream = stream;
+        activeSourceId = sourceId;
+        const videoEl = document.getElementById('live-window-video');
+        videoEl.srcObject = stream;
+        videoEl.onloadedmetadata = () => {
+          if (videoEl.videoWidth && videoEl.videoHeight) {
+            updateResolutionLabels(videoEl.videoWidth, videoEl.videoHeight);
+          }
+        };
+        setPreviewOverlaysVisible(false);
+      } catch (err) {
+        console.error('Stream attach error:', err);
+      }
+    }
+
+    function getPreferredScreenSource() {
+      if (selectedDisplayId) {
+        const match = availableSources.find(s => s.isScreen && String(s.displayId) === String(selectedDisplayId));
+        if (match) return match;
+      }
+      return availableSources.find(s => s.isScreen);
+    }
+
+    async function selectMode(m) {
+      currentMode = m;
+      ['window', 'region', 'screen'].forEach(k => {
+        const btn = document.getElementById('mode-' + k);
+        btn.className = k === m
+          ? 'btn-3d-active py-3 px-2.5 rounded-xl flex items-center justify-center gap-2'
+          : 'btn-3d py-3 px-2.5 rounded-xl flex items-center justify-center gap-2';
+      });
+      const cropContainer = document.getElementById('crop-overlay-container');
+      const select = document.getElementById('window-select');
+
+      if (m === 'region') {
+        cropContainer.classList.remove('hidden');
+        if (!select.value) {
+          const screenSrc = getPreferredScreenSource();
+          if (screenSrc) await attachLiveStream(screenSrc.id);
+        } else {
+          await attachLiveStream(select.value);
+        }
+        updateCropMetrics();
+      } else if (m === 'screen') {
+        cropContainer.classList.add('hidden');
+        const screenSrc = getPreferredScreenSource();
+        if (screenSrc) {
+          select.value = screenSrc.id;
+          await attachLiveStream(screenSrc.id);
+        }
+      } else {
+        cropContainer.classList.add('hidden');
+        if (!select.value) {
+          await attachLiveStream('');
+        } else {
+          await attachLiveStream(select.value);
+        }
+      }
+    }
+
+    async function onWindowSelectChange(val) {
+      if (!val) {
+        document.getElementById('crop-overlay-container').classList.add('hidden');
+        await attachLiveStream('');
+      } else {
+        await attachLiveStream(val);
+        if (currentMode === 'region') {
+          document.getElementById('crop-overlay-container').classList.remove('hidden');
+        }
+      }
+    }
+
+    function selectFpsBtn(clickedBtn, fpsVal) {
+      targetFps = fpsVal;
+      document.querySelectorAll('.fps-btn').forEach(b => {
+        b.className = 'fps-btn btn-3d py-2 rounded-xl text-xs font-mono font-semibold text-slate-200';
+      });
+      clickedBtn.className = 'fps-btn btn-3d-active py-2 rounded-xl text-xs font-mono font-extrabold text-cyan-300';
+      const label = fpsVal === 0 ? 'MAX ∞' : `${fpsVal} FPS`;
+      document.getElementById('telemetry-fps').textContent = label;
+      if (activeSourceId) attachLiveStream(activeSourceId);
+      saveSettings();
+    }
+
+    function selectOutputFormat(fmt, persist = true) {
+      outputFormat = fmt;
+      const map = {
+        webm:  { vExt: '.webm', sExt: '.webp' },
+        gif:   { vExt: '.gif',  sExt: '.png'  },
+        video: { vExt: '.mp4',  sExt: '.png'  }
+      };
+      ['webm', 'gif', 'video'].forEach(k => {
+        const btn = document.getElementById('fmt-' + k);
+        const title = k.toUpperCase();
+        if (k === fmt) {
+          btn.className = 'btn-3d-active py-2.5 px-3 rounded-xl flex items-center justify-center';
+          btn.innerHTML = `<span class="text-xs font-extrabold font-mono text-cyan-300">${title}</span>`;
+        } else {
+          btn.className = 'btn-3d py-2.5 px-3 rounded-xl flex items-center justify-center';
+          btn.innerHTML = `<span class="text-xs font-extrabold font-mono text-slate-200">${title}</span>`;
+        }
+      });
+      document.getElementById('path-video-ext').textContent = map[fmt].vExt;
+      document.getElementById('path-shot-ext').textContent = map[fmt].sExt;
+      if (persist) saveSettings();
+    }
+
+    function toggleOptimizeSlider(enabled, persist = true) {
+      optimizeEnabled = enabled;
+      const wrap = document.getElementById('opt-slider-wrap');
+      const slider = document.getElementById('opt-slider');
+      slider.disabled = !enabled;
+      if (enabled) {
+        wrap.classList.remove('opacity-40', 'pointer-events-none');
+      } else {
+        wrap.classList.add('opacity-40', 'pointer-events-none');
+      }
+      if (persist) saveSettings();
+    }
+
+    function updateCompressionReadout(val) {
+      compressionLevel = parseInt(val, 10) || 0;
+      document.getElementById('opt-level-readout').textContent = `Сжатие: ${compressionLevel}%`;
+    }
+
+    function saveSettings() {
+      window.morshynskaAPI.saveConfig({
+        videoDir: document.getElementById('input-video-dir').value,
+        shotDir: document.getElementById('input-shot-dir').value,
+        outputFormat,
+        optimize: optimizeEnabled,
+        compression: compressionLevel,
+        targetFps,
+        sysAudio: document.getElementById('chk-sys-audio').checked,
+        micAudio: document.getElementById('chk-mic-audio').checked
+      });
+    }
+
+    async function browseDir(kind) {
+      const chosen = await window.morshynskaAPI.selectFolder(kind);
+      if (chosen) {
+        if (kind === 'video') document.getElementById('input-video-dir').value = chosen;
+        else document.getElementById('input-shot-dir').value = chosen;
+        saveSettings();
+      }
+    }
+
+    function openDir(kind) {
+      const p = kind === 'video'
+        ? document.getElementById('input-video-dir').value
+        : document.getElementById('input-shot-dir').value;
+      window.morshynskaAPI.openFolder(p);
+    }
+
+    function getCropPixels() {
+      const box = document.getElementById('crop-box');
+      const l = parseFloat(box.style.left) / 100;
+      const t = parseFloat(box.style.top) / 100;
+      const w = parseFloat(box.style.width) / 100;
+      const h = parseFloat(box.style.height) / 100;
+
+      const pxX = Math.round((l * SCREEN_W) / 2) * 2;
+      const pxY = Math.round((t * SCREEN_H) / 2) * 2;
+      const pxW = Math.max(64, Math.round((w * SCREEN_W) / 2) * 2);
+      const pxH = Math.max(64, Math.round((h * SCREEN_H) / 2) * 2);
+      return { x: pxX, y: pxY, w: pxW, h: pxH };
+    }
+
+    function updateCropMetrics() {
+      const { x, y, w, h } = getCropPixels();
+      document.getElementById('crop-live-label').textContent = `✥ ${w} × ${h} px (X:${x} Y:${y})`;
+      document.getElementById('region-coords').textContent = `${w}×${h} (X:${x} Y:${y})`;
+    }
+
+    (function initCropRegulator() {
+      const stage = document.getElementById('preview-stage');
+      const box = document.getElementById('crop-box');
+      let mode = null;
+      let startX = 0, startY = 0;
+      let startLeft = 18, startTop = 14, startW = 62, startH = 66;
+
+      box.addEventListener('mousedown', (e) => {
+        e.stopPropagation();
+        const handle = e.target.closest('.resize-handle');
+        mode = handle ? handle.getAttribute('data-dir') : 'move';
+        startX = e.clientX;
+        startY = e.clientY;
+        startLeft = parseFloat(box.style.left);
+        startTop = parseFloat(box.style.top);
+        startW = parseFloat(box.style.width);
+        startH = parseFloat(box.style.height);
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+      });
+
+      function onMove(e) {
+        if (!mode) return;
+        const rect = stage.getBoundingClientRect();
+        const dx = ((e.clientX - startX) / rect.width) * 100;
+        const dy = ((e.clientY - startY) / rect.height) * 100;
+
+        let l = startLeft, t = startTop, w = startW, h = startH;
+        if (mode === 'move') {
+          l = Math.max(0, Math.min(100 - w, startLeft + dx));
+          t = Math.max(0, Math.min(100 - h, startTop + dy));
+        } else {
+          if (mode.includes('e')) w = Math.max(10, Math.min(100 - l, startW + dx));
+          if (mode.includes('s')) h = Math.max(12, Math.min(100 - t, startH + dy));
+          if (mode.includes('w')) {
+            const newL = Math.max(0, Math.min(startLeft + startW - 10, startLeft + dx));
+            w = startW + (startLeft - newL);
+            l = newL;
+          }
+          if (mode.includes('n')) {
+            const newT = Math.max(0, Math.min(startTop + startH - 12, startTop + dy));
+            h = startH + (startTop - newT);
+            t = newT;
+          }
+        }
+        box.style.left = l.toFixed(1) + '%';
+        box.style.top = t.toFixed(1) + '%';
+        box.style.width = w.toFixed(1) + '%';
+        box.style.height = h.toFixed(1) + '%';
+        updateCropMetrics();
+      }
+
+      function onUp() {
+        mode = null;
+        window.removeEventListener('mousemove', onMove);
+        window.removeEventListener('mouseup', onUp);
+      }
+    })();
+
+    // Draw Watermark onto Canvas if enabled
+    function drawWatermarkOnCanvas(ctx, canvasW, canvasH) {
+      if (!watermarkEnabled || !watermarkImgObj) return;
+      ctx.save();
+      ctx.globalAlpha = watermarkOpacity / 100;
+      const wmW = Math.round(canvasW * (watermarkScale / 100));
+      const aspect = watermarkImgObj.height / Math.max(1, watermarkImgObj.width);
+      const wmH = Math.round(wmW * aspect);
+      const padX = Math.round(canvasW * 0.03);
+      const padY = Math.round(canvasH * 0.04);
+
+      let x = canvasW - wmW - padX;
+      let y = canvasH - wmH - padY;
+      if (watermarkPos === 'top-left') { x = padX; y = padY; }
+      else if (watermarkPos === 'top-right') { x = canvasW - wmW - padX; y = padY; }
+      else if (watermarkPos === 'bottom-left') { x = padX; y = canvasH - wmH - padY; }
+      else if (watermarkPos === 'center') {
+        x = Math.round((canvasW - wmW) / 2);
+        y = Math.round((canvasH - wmH) / 2);
+      }
+      ctx.drawImage(watermarkImgObj, x, y, wmW, wmH);
+      ctx.restore();
+    }
+
+    function formatDuration(ms) {
+      const totalSec = Math.floor(ms / 1000);
+      const h = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+      const m = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+      const s = String(totalSec % 60).padStart(2, '0');
+      return `${h}:${m}:${s}`;
+    }
+
+    async function toggleRecording() {
+      if (isRecording) await stopRecording();
+      else await startRecording();
+    }
+
+    async function startRecording() {
+      if (!liveStream) {
+        const screenSrc = getPreferredScreenSource();
+        if (screenSrc) {
+          document.getElementById('window-select').value = screenSrc.id;
+          await attachLiveStream(screenSrc.id);
+        }
+      }
+      if (!liveStream) return;
+
+      const tracks = [];
+      const videoEl = document.getElementById('live-window-video');
+      const fps = targetFps > 0 ? targetFps : 120;
+
+      // Use canvas pipeline when cropping region OR burning watermark/captcha into the recording
+      if (currentMode === 'region' || (watermarkEnabled && watermarkImgObj)) {
+        const { x, y, w, h } = currentMode === 'region'
+          ? getCropPixels()
+          : { x: 0, y: 0, w: videoEl.videoWidth || SCREEN_W, h: videoEl.videoHeight || SCREEN_H };
+
+        const canvas = document.getElementById('offscreen-canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        const drawStep = () => {
+          if (!isRecording) return;
+          ctx.drawImage(videoEl, x, y, w, h, 0, 0, w, h);
+          drawWatermarkOnCanvas(ctx, w, h);
+          cropDrawLoopId = requestAnimationFrame(drawStep);
+        };
+        isRecording = true;
+        drawStep();
+        const canvasStream = canvas.captureStream(fps);
+        tracks.push(...canvasStream.getVideoTracks());
+      } else {
+        tracks.push(...liveStream.getVideoTracks());
+      }
+
+      if (document.getElementById('chk-sys-audio').checked) {
+        try {
+          const sysAudioStream = await navigator.mediaDevices.getUserMedia({
+            audio: { mandatory: { chromeMediaSource: 'desktop' } },
+            video: { mandatory: { chromeMediaSource: 'desktop', maxWidth: 16, maxHeight: 16 } }
+          });
+          sysAudioStream.getVideoTracks().forEach(t => t.stop());
+          tracks.push(...sysAudioStream.getAudioTracks());
+        } catch (e) {}
+      }
+
+      if (document.getElementById('chk-mic-audio').checked) {
+        try {
+          const audioConstraint = selectedMicDeviceId && selectedMicDeviceId !== 'default'
+            ? { deviceId: { exact: selectedMicDeviceId } }
+            : true;
+          const micStream = await navigator.mediaDevices.getUserMedia({ audio: audioConstraint, video: false });
+          tracks.push(...micStream.getAudioTracks());
+        } catch (e) {}
+      }
+
+      const combinedStream = new MediaStream(tracks);
+      await window.morshynskaAPI.startRecordingSession({
+        outputFormat,
+        optimize: optimizeEnabled,
+        compression: compressionLevel,
+        targetFps
+      });
+
+      const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=h264')
+        ? 'video/webm;codecs=h264'
+        : 'video/webm;codecs=vp9';
+
+      mediaRecorder = new MediaRecorder(combinedStream, {
+        mimeType,
+        videoBitsPerSecond: 65000000
+      });
+
+      mediaRecorder.ondataavailable = async (e) => {
+        if (e.data && e.data.size > 0) {
+          const buf = await e.data.arrayBuffer();
+          await window.morshynskaAPI.saveRecordingChunk(buf);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        if (cropDrawLoopId) cancelAnimationFrame(cropDrawLoopId);
+        setTopStatus('saving', 'КОДИРОВАНИЕ FFmpeg...', 'NVENC');
+        const res = await window.morshynskaAPI.finalizeRecordingSession({
+          outputFormat,
+          optimize: optimizeEnabled,
+          compression: compressionLevel,
+          targetFps,
+          videoDir: document.getElementById('input-video-dir').value
+        });
+        if (res && res.ok) {
+          setTopStatus('saved', 'ЗАПИСЬ СОХРАНЕНА ✓', res.fileName);
+        } else {
+          setTopStatus('idle', 'ГОТОВ К СЪЁМКЕ', 'MAX ∞ FPS');
+        }
+      };
+
+      isRecording = true;
+      recStartTime = Date.now();
+      mediaRecorder.start(500);
+
+      // Show recording icon once (stays solid during the entire recording without blinking!)
+      setTopStatus('rec');
+    }
+
+    async function stopRecording() {
+      if (!mediaRecorder || mediaRecorder.state === 'inactive') return;
+      isRecording = false;
+      if (recTimerInterval) {
+        clearInterval(recTimerInterval);
+        recTimerInterval = null;
+      }
+      mediaRecorder.stop();
+    }
+
+    async function takeScreenshot() {
+      if (!liveStream) {
+        const screenSrc = getPreferredScreenSource();
+        if (screenSrc) {
+          document.getElementById('window-select').value = screenSrc.id;
+          await attachLiveStream(screenSrc.id);
+        }
+      }
+      const videoEl = document.getElementById('live-window-video');
+      if (!videoEl.videoWidth) return;
+
+      const canvas = document.getElementById('offscreen-canvas');
+      const ctx = canvas.getContext('2d');
+
+      if (currentMode === 'region') {
+        const { x, y, w, h } = getCropPixels();
+        canvas.width = w;
+        canvas.height = h;
+        ctx.drawImage(videoEl, x, y, w, h, 0, 0, w, h);
+        drawWatermarkOnCanvas(ctx, w, h);
+      } else {
+        canvas.width = videoEl.videoWidth;
+        canvas.height = videoEl.videoHeight;
+        ctx.drawImage(videoEl, 0, 0);
+        drawWatermarkOnCanvas(ctx, canvas.width, canvas.height);
+      }
+
+      const dataUrl = canvas.toDataURL('image/png');
+      const res = await window.morshynskaAPI.saveScreenshotFile({
+        dataUrl,
+        outputFormat,
+        optimize: optimizeEnabled,
+        compression: compressionLevel,
+        shotDir: document.getElementById('input-shot-dir').value
+      });
+      if (res && res.ok) {
+        setTopStatus('shot');
+      }
+    }
+
+    async function triggerCopyFlow() {
+      savedModeBeforeCopy = currentMode;
+      await window.morshynskaAPI.triggerCopyOverlay();
+    }
+
+    let hdrFadeTimer1 = null;
+    let hdrFadeTimer2 = null;
+    let currentHdrState = 'idle';
+
+    function setTopStatus(state) {
+      // If already in 'rec' and receiving 'rec', keep icon untouched (no blinking!)
+      if (state === 'rec' && currentHdrState === 'rec') return;
+
+      if (hdrFadeTimer1) { clearTimeout(hdrFadeTimer1); hdrFadeTimer1 = null; }
+      if (hdrFadeTimer2) { clearTimeout(hdrFadeTimer2); hdrFadeTimer2 = null; }
+
+      const topPill = document.getElementById('top-status-pill');
+      const hdrIcons = {
+        rec: document.getElementById('hdr-icon-rec'),
+        saved: document.getElementById('hdr-icon-saved'),
+        shot: document.getElementById('hdr-icon-shot'),
+        copy: document.getElementById('hdr-icon-copy')
+      };
+
+      Object.values(hdrIcons).forEach(el => { if (el) el.classList.add('hidden'); });
+      topPill.style.opacity = '1';
+      topPill.style.transform = 'scale(1)';
+
+      // During ffmpeg encoding ('saving'), keep the 'rec' icon until saved completes
+      if (state === 'saving') {
+        currentHdrState = 'rec';
+        if (hdrIcons.rec) hdrIcons.rec.classList.remove('hidden');
+        return;
+      }
+
+      currentHdrState = state;
+
+      if (state === 'rec') {
+        if (hdrIcons.rec) hdrIcons.rec.classList.remove('hidden');
+        window.morshynskaAPI.updateHudState({ state: 'rec' });
+      } else if (state === 'saved' || state === 'shot' || state === 'copy') {
+        if (hdrIcons[state]) hdrIcons[state].classList.remove('hidden');
+        window.morshynskaAPI.updateHudState({ state, fadeDelayMs: 1000 });
+        hdrFadeTimer1 = setTimeout(() => {
+          topPill.style.opacity = '0';
+          topPill.style.transform = 'scale(0.86)';
+          hdrFadeTimer2 = setTimeout(() => {
+            Object.values(hdrIcons).forEach(el => { if (el) el.classList.add('hidden'); });
+            topPill.style.opacity = '1';
+            topPill.style.transform = 'scale(1)';
+            if (currentHdrState === state) currentHdrState = 'idle';
+          }, 650);
+        }, 1000);
+      } else {
+        window.morshynskaAPI.updateHudState({ state: 'idle' });
+      }
+    }
+
+    function formatDisplayHotkey(accel) {
+      if (!accel) return '';
+      return accel
+        .replace('CommandOrControl+', 'Ctrl + ')
+        .replace('PrintScreen', 'PrtSc')
+        .replace('ScrollLock', 'ScrLk');
+    }
+
+    function mapKeyEventToAccelerator(e) {
+      if (e.code === 'PrintScreen' || e.key === 'PrintScreen' || e.keyCode === 44) return 'PrintScreen';
+      if (e.code === 'ScrollLock' || e.key === 'ScrollLock') return 'ScrollLock';
+      if (e.code === 'Pause' || e.key === 'Pause') return 'Pause';
+      if (e.code === 'Insert' || e.key === 'Insert') return 'Insert';
+      if (e.code === 'Delete' || e.key === 'Delete') return 'Delete';
+      if (e.code === 'Home' || e.key === 'Home') return 'Home';
+      if (e.code === 'End' || e.key === 'End') return 'End';
+      if (e.code === 'PageUp' || e.key === 'PageUp') return 'PageUp';
+      if (e.code === 'PageDown' || e.key === 'PageDown') return 'PageDown';
+      if (e.code === 'Space' || e.key === ' ') return 'Space';
+      if (e.code && /^Key[A-Z]$/.test(e.code)) return e.code.slice(3);
+      if (e.code && /^Digit[0-9]$/.test(e.code)) return e.code.slice(5);
+      if (e.code && /^Numpad[0-9]$/.test(e.code)) return 'num' + e.code.slice(6);
+      if (e.code === 'NumpadAdd') return 'numadd';
+      if (e.code === 'NumpadSubtract') return 'numsub';
+      if (e.code === 'NumpadMultiply') return 'nummult';
+      if (e.code === 'NumpadDivide') return 'numdiv';
+      if (e.code === 'NumpadDecimal') return 'numdec';
+      if (e.key && /^F([1-9]|1[0-9]|2[0-4])$/i.test(e.key)) return e.key.toUpperCase();
+      return e.key && e.key.length === 1 ? e.key.toUpperCase() : e.key;
+    }
+
+    // Single Click on Hotkey Card -> Rebind Key
+    async function startRebind(action, e) {
+      e.stopPropagation();
+      rebindingAction = action;
+      const kbd = document.getElementById('kbd-' + action);
+      kbd.textContent = 'Нажми...';
+      await window.morshynskaAPI.beginRebindCapture(action);
+    }
+
+    async function handleRebindKeyEvent(e) {
+      if (!rebindingAction) return;
+      // On Windows, PrintScreen only fires 'keyup' (not 'keydown'), whereas normal keys fire 'keydown'
+      const isPrintScreen = (e.code === 'PrintScreen' || e.key === 'PrintScreen' || e.keyCode === 44);
+      if (e.type === 'keyup' && !isPrintScreen) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      if (['Control', 'Shift', 'Alt', 'Meta'].includes(e.key)) return;
+      if (e.key === 'Escape') {
+        rebindingAction = null;
+        await window.morshynskaAPI.beginRebindCapture(null);
+        initApp();
+        return;
+      }
+      const parts = [];
+      if (e.ctrlKey) parts.push('CommandOrControl');
+      if (e.altKey) parts.push('Alt');
+      if (e.shiftKey) parts.push('Shift');
+      const keyName = mapKeyEventToAccelerator(e);
+      if (!keyName) return;
+      parts.push(keyName);
+      const accel = parts.join('+');
+      const displayAccel = formatDisplayHotkey(accel);
+
+      const action = rebindingAction;
+      rebindingAction = null;
+      await window.morshynskaAPI.rebindHotkey(action, accel);
+      document.getElementById('kbd-' + action).textContent = displayAccel;
+      if (action === 'region') document.getElementById('btn-region-hk').textContent = displayAccel;
+    }
+
+    window.addEventListener('keydown', handleRebindKeyEvent);
+    window.addEventListener('keyup', handleRebindKeyEvent);
+
+    window.morshynskaAPI.onHotkeyRebound(({ action, accelerator }) => {
+      rebindingAction = null;
+      const displayAccel = formatDisplayHotkey(accelerator);
+      const kbd = document.getElementById('kbd-' + action);
+      if (kbd) kbd.textContent = displayAccel;
+      if (action === 'region') document.getElementById('btn-region-hk').textContent = displayAccel;
+    });
+
+    window.morshynskaAPI.onGlobalAction((data) => {
+      if (data.action === 'record') toggleRecording();
+      else if (data.action === 'region') selectMode('region');
+      else if (data.action === 'screenshot') takeScreenshot();
+    });
+
+    window.morshynskaAPI.onCopyCompleted((data) => {
+      selectMode(savedModeBeforeCopy);
+      if (data && data.ok) {
+        setTopStatus(data.savedFile ? 'shot' : 'copy');
+      }
+    });
+
+    async function checkUpdatesClick() {
+      const badge = document.getElementById('update-badge');
+      badge.textContent = '↻...';
+      const res = await window.morshynskaAPI.checkForUpdates();
+      badge.textContent = `v${(res && res.currentVersion) || '1.0.0'}`;
+      if (res && res.updateAvailable) {
+        document.getElementById('update-new-ver').textContent = `NEW v${res.latestVersion}`;
+        document.getElementById('update-notes').textContent = res.notes || 'Доступно обновление Morshynska Lab Capture';
+        const banner = document.getElementById('update-banner');
+        banner.classList.remove('hidden');
+        banner.classList.add('flex');
+      }
+    }
+
+    async function installUpdateClick() {
+      const btn = document.getElementById('btn-install-update');
+      btn.textContent = '⏳ Скачивание...';
+      await window.morshynskaAPI.installUpdate();
+    }
+
+    // 16-bit Pixel Art Cameraman & Broadcast Banner ("CAPTURE STUDIO")
+    (function initPixelStudioBanner() {
+      const cvs = document.getElementById('pixel-studio-banner');
+      if (!cvs) return;
+      const pctx = cvs.getContext('2d');
+      pctx.imageSmoothingEnabled = false;
+
+      const P = 2; // 1 pixel-art unit = 2x2 screen pixels (grid: 215 x 20 units)
+      const px = (gx, gy, gw, gh, col) => {
+        pctx.fillStyle = col;
+        pctx.fillRect(Math.round(gx * P), Math.round(gy * P), Math.round(gw * P), Math.round(gh * P));
+      };
+
+      // 5x7 Pixel Font Bitmap for "CAPTURE STUDIO"
+      const FONT = {
+        C: ['01110','10001','10000','10000','10000','10001','01110'],
+        A: ['01110','10001','10001','11111','10001','10001','10001'],
+        P: ['11110','10001','10001','11110','10000','10000','10000'],
+        T: ['11111','00100','00100','00100','00100','00100','00100'],
+        U: ['10001','10001','10001','10001','10001','10001','01110'],
+        R: ['11110','10001','10001','11110','10100','10010','10001'],
+        E: ['11111','10000','10000','11110','10000','10000','11111'],
+        S: ['01111','10000','10000','01110','00001','00001','11110'],
+        D: ['11110','10001','10001','10001','10001','10001','11110'],
+        I: ['11111','00100','00100','00100','00100','00100','11111'],
+        O: ['01110','10001','10001','10001','10001','10001','01110'],
+        ' ': ['000','000','000','000','000','000','000']
+      };
+
+      function drawPixelString(str, startX, startY) {
+        let curX = startX;
+        for (const ch of str) {
+          const glyph = FONT[ch] || FONT[' '];
+          const w = glyph[0].length;
+          for (let r = 0; r < glyph.length; r++) {
+            for (let c = 0; c < w; c++) {
+              if (glyph[r][c] === '1') {
+                // Drop shadow
+                px(curX + c + 1, startY + r + 1, 1, 1, '#040914');
+                // Gradient pixel color (top rows bright cyan, bottom rows electric blue)
+                const col = r < 2 ? '#FFFFFF' : (r < 4 ? '#00F5D4' : '#38BDF8');
+                px(curX + c, startY + r, 1, 1, col);
+              }
+            }
+          }
+          curX += w + 1;
+        }
+      }
+
+      let tick = 0;
+      function renderPixelScene() {
+        tick++;
+        pctx.clearRect(0, 0, cvs.width, cvs.height);
+
+        // Subtle pixel starfield / studio grid dots
+        const stars = [[6,3],[48,2],[95,3],[142,2],[178,4],[208,3],[52,16],[122,17],[168,16]];
+        stars.forEach(([sx, sy], i) => {
+          const blink = ((tick + i * 7) % 24) < 12;
+          px(sx, sy, 1, 1, blink ? 'rgba(56,189,248,0.35)' : 'rgba(148,163,184,0.14)');
+        });
+
+        // 1. LEFT: Pixel Cameraman Operator + Cinema Rig & Boom Mic (x: 4..44)
+        // Operator Cap & Headset
+        px(7, 4, 6, 2, '#00BBF9'); // cap crown
+        px(6, 5, 9, 1, '#00F5D4'); // cap visor pointing right
+        px(7, 6, 6, 4, '#FDBA74'); // face
+        px(11, 7, 2, 1, '#0F172A'); // visor glasses
+        px(8, 5, 2, 4, '#334155'); // studio headphones
+        px(8, 6, 1, 2, '#38BDF8'); // headphone glow
+        // Operator Hoodie & Arm holding rig
+        px(6, 10, 7, 6, '#1E293B'); // torso
+        px(7, 11, 5, 4, '#0F172A'); // vest
+        px(11, 11, 6, 2, '#38BDF8'); // arm reaching to camera handle
+        px(7, 16, 2, 3, '#0F172A'); // left leg
+        px(10, 16, 2, 3, '#0F172A'); // right leg
+
+        // Broadcast Cinema Camera on Tripod (x: 17..36)
+        // Dual Spinning Film Reels on top (animate rotation with tick!)
+        const reelPhase = Math.floor(tick / 4) % 2;
+        px(18, 2, 5, 5, '#334155');
+        px(19, 3, 3, 3, '#94A3B8');
+        px(reelPhase ? 19 : 20, 3, 1, 1, '#0F172A');
+        px(24, 2, 5, 5, '#334155');
+        px(25, 3, 3, 3, '#94A3B8');
+        px(reelPhase ? 26 : 25, 3, 1, 1, '#0F172A');
+
+        // Camera Body
+        px(17, 7, 13, 6, '#1E293B');
+        px(18, 8, 11, 4, '#0F172A');
+        px(19, 9, 4, 2, '#00F5D4'); // side LCD monitor on camera
+
+        // Blinking Tally REC LED on top of camera
+        const recBlink = (Math.floor(tick / 8) % 2 === 0) || isRecording;
+        px(28, 5, 2, 2, recBlink ? '#FF2A5F' : '#7F1D1D');
+        if (recBlink) px(27, 4, 4, 4, 'rgba(255, 42, 95, 0.25)');
+
+        // Matte Box & Telephoto Lens
+        px(30, 8, 3, 4, '#475569');
+        px(33, 7, 3, 6, '#00F5D4'); // lens rim
+        px(34, 8, 2, 4, '#0284C7'); // lens glass
+
+        // Subtle Light Beam from Lens
+        px(36, 6, 5, 8, 'rgba(0, 245, 212, 0.08)');
+        px(41, 5, 5, 10, 'rgba(0, 187, 249, 0.04)');
+
+        // Tripod Legs
+        px(22, 13, 3, 2, '#64748B');
+        px(20, 15, 2, 4, '#475569');
+        px(23, 15, 1, 4, '#475569');
+        px(25, 15, 2, 4, '#475569');
+
+        // 2. CENTER-LEFT: Pixel Clapperboard (Хлопушка режиссёра) (x: 45..58)
+        const clapOpen = (Math.floor(tick / 16) % 4 === 0);
+        if (clapOpen) {
+          px(45, 4, 12, 2, '#E2E8F0');
+          px(47, 4, 2, 2, '#0F172A');
+          px(51, 4, 2, 2, '#0F172A');
+          px(55, 4, 2, 2, '#0F172A');
+        } else {
+          px(45, 6, 12, 2, '#E2E8F0');
+          px(47, 6, 2, 2, '#0F172A');
+          px(51, 6, 2, 2, '#0F172A');
+          px(55, 6, 2, 2, '#0F172A');
+        }
+        px(45, 8, 12, 8, '#1E293B');
+        px(46, 9, 10, 6, '#0F172A');
+        px(47, 10, 4, 1, '#00F5D4');
+        px(47, 12, 7, 1, '#64748B');
+        px(47, 14, 5, 1, '#FF2A5F');
+
+        // 3. CENTER: Pixel Art Title "CAPTURE STUDIO" + Viewfinder Corners (x: 64..158)
+        // Viewfinder bracket corners around the title
+        px(62, 3, 3, 1, '#00F5D4'); px(62, 3, 1, 3, '#00F5D4');
+        px(155, 3, 3, 1, '#00F5D4'); px(157, 3, 1, 3, '#00F5D4');
+        px(62, 16, 3, 1, '#00F5D4'); px(62, 14, 1, 3, '#00F5D4');
+        px(155, 16, 3, 1, '#00F5D4'); px(157, 14, 1, 3, '#00F5D4');
+
+        drawPixelString('CAPTURE STUDIO', 66, 5);
+
+        // Subtitle pixel progress / timeline bar under CAPTURE STUDIO
+        px(66, 14, 88, 1, '#1E293B');
+        const scanPos = 66 + ((tick * 2) % 76);
+        px(scanPos, 14, 12, 1, '#00F5D4');
+
+        // 4. RIGHT: Animated Audio VU Equalizer Bars + ON AIR Pixel Badge (x: 164..211)
+        const bars = 7;
+        for (let b = 0; b < bars; b++) {
+          const h = 3 + Math.round(Math.abs(Math.sin((tick * 0.25) + b * 0.9)) * 10);
+          const bx = 164 + b * 3;
+          for (let y = 0; y < h; y++) {
+            const by = 16 - y;
+            const col = y > 9 ? '#FF2A5F' : (y > 6 ? '#FACC15' : '#10B981');
+            px(bx, by, 2, 1, col);
+          }
+        }
+
+        // Pixel "REC" Frame Badge on far right (x: 188..211)
+        px(188, 5, 23, 10, '#1E293B');
+        px(189, 6, 21, 8, '#090F1E');
+        px(191, 8, 4, 4, recBlink ? '#FF2A5F' : '#881337');
+        // Tiny pixel "LIVE" bars
+        px(197, 8, 2, 4, '#E2E8F0');
+        px(200, 8, 1, 4, '#E2E8F0');
+        px(202, 8, 3, 4, '#00F5D4');
+        px(206, 8, 3, 4, '#38BDF8');
+      }
+
+      renderPixelScene();
+      setInterval(renderPixelScene, 120);
+    })();
+
+    initApp();
+  </script>
+</body>
+</html>

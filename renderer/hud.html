@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body {
+      background: transparent;
+      overflow: hidden;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      display: flex;
+      justify-content: flex-end;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 14px 18px;
+    }
+    @keyframes pulseRing {
+      0% { transform: scale(0.90); opacity: 0.95; }
+      50% { transform: scale(1.18); opacity: 0.25; }
+      100% { transform: scale(0.90); opacity: 0.95; }
+    }
+    @keyframes popIn {
+      0% { transform: scale(0.65); opacity: 0; }
+      70% { transform: scale(1.08); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    @keyframes fadeOutSmooth {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(0.86); opacity: 0; }
+    }
+    .rec-ring {
+      animation: pulseRing 1.5s infinite ease-in-out;
+      transform-origin: 32px 32px;
+    }
+    .icon-box {
+      display: none;
+      width: 48px;
+      height: 48px;
+      filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.75));
+      animation: popIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .icon-box.visible {
+      display: block;
+    }
+    .icon-box.fading-out {
+      animation: fadeOutSmooth 0.65s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    .fps-badge {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 11px;
+      margin-top: 6px;
+      border-radius: 10px;
+      background: rgba(5, 11, 22, 0.92);
+      border: 1.5px solid rgba(0, 245, 212, 0.55);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.65);
+      color: #00F5D4;
+      font-size: 11px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .fps-badge.visible { display: inline-flex; }
+    .fps-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #10B981;
+      box-shadow: 0 0 8px #10B981;
+    }
+  </style>
+</head>
+<body>
+  <div id="fps-badge" class="fps-badge">
+    <span class="fps-dot"></span>
+    <span id="fps-val">165 FPS</span>
+  </div>
+
+  <!-- 1. Recording Active Icon (Съёмка идёт — висит постоянно без миганий!) -->
+  <div id="icon-rec" class="icon-box">
+    <svg width="48" height="48" viewBox="0 0 64 64" fill="none">
+      <rect x="3" y="3" width="58" height="58" rx="16" fill="#14080E" fill-opacity="0.94" stroke="#FF2A5F" stroke-width="2.5"/>
+      <circle cx="32" cy="32" r="20" stroke="#FF2A5F" stroke-width="2.2" stroke-opacity="0.4" class="rec-ring"/>
+      <circle cx="32" cy="32" r="14" stroke="#FF2A5F" stroke-width="2.2" stroke-dasharray="6 4"/>
+      <circle cx="32" cy="32" r="8.5" fill="#FF2A5F"/>
+      <circle cx="29.5" cy="29.5" r="2.2" fill="#FFD1DC"/>
+    </svg>
+  </div>
+
+  <!-- 2. Recording Stopped + Saved Icon (Запись сохранена — плавно исчезает через 1 сек!) -->
+  <div id="icon-saved" class="icon-box">
+    <svg width="48" height="48" viewBox="0 0 64 64" fill="none">
+      <rect x="3" y="3" width="58" height="58" rx="16" fill="#071712" fill-opacity="0.94" stroke="#10B981" stroke-width="2.5"/>
+      <circle cx="32" cy="32" r="16" fill="#10B981" fill-opacity="0.18" stroke="#10B981" stroke-width="2.4"/>
+      <path d="M24.5 32.5L29.5 37.5L40 26.5" stroke="#00F5D4" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <!-- 3. Screenshot Captured Icon (Скриншот сохранён — плавно исчезает через 1 сек!) -->
+  <div id="icon-shot" class="icon-box">
+    <svg width="48" height="48" viewBox="0 0 64 64" fill="none">
+      <rect x="3" y="3" width="58" height="58" rx="16" fill="#07131F" fill-opacity="0.94" stroke="#00BBF9" stroke-width="2.5"/>
+      <path d="M16 23V18C16 16.9 16.9 16 18 16H23M41 16H46C47.1 16 48 16.9 48 18V23M16 41V46C16 47.1 16.9 48 18 48H23M41 48H46C47.1 48 48 47.1 48 46V41" stroke="#00F5D4" stroke-width="2.6" stroke-linecap="round"/>
+      <circle cx="32" cy="32" r="8" stroke="#00BBF9" stroke-width="2.6"/>
+      <circle cx="32" cy="32" r="3.4" fill="#00F5D4"/>
+    </svg>
+  </div>
+
+  <!-- 4. COPY to Clipboard Icon (Скопировано в буфер — плавно исчезает через 1 сек!) -->
+  <div id="icon-copy" class="icon-box">
+    <svg width="48" height="48" viewBox="0 0 64 64" fill="none">
+      <rect x="3" y="3" width="58" height="58" rx="16" fill="#0A1026" fill-opacity="0.94" stroke="#00F5D4" stroke-width="2.5"/>
+      <rect x="22" y="16" width="22" height="26" rx="4" stroke="#00BBF9" stroke-width="2.4" fill="#071324"/>
+      <path d="M18 24H16C14.3431 24 13 25.3431 13 27V47C13 48.6569 14.3431 50 16 50H34C35.6569 50 37 48.6569 37 47V45" stroke="#00F5D4" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M27.5 29.5L31.5 33.5L39 25.5" stroke="#00F5D4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    const fpsBadge = document.getElementById('fps-badge');
+    const fpsVal = document.getElementById('fps-val');
+    const icons = {
+      rec: document.getElementById('icon-rec'),
+      saved: document.getElementById('icon-saved'),
+      shot: document.getElementById('icon-shot'),
+      copy: document.getElementById('icon-copy')
+    };
+
+    let currentState = 'idle';
+    let fadeStartTimer = null;
+    let fadeEndTimer = null;
+    let showFpsEnabled = false;
+    let frameCount = 0;
+    let lastTime = performance.now();
+
+    function measureFps(now) {
+      frameCount++;
+      if (now - lastTime >= 500) {
+        const currentFps = Math.round((frameCount * 1000) / (now - lastTime));
+        if (showFpsEnabled) {
+          fpsVal.textContent = `${currentFps} FPS`;
+        }
+        frameCount = 0;
+        lastTime = now;
+      }
+      if (showFpsEnabled) requestAnimationFrame(measureFps);
+    }
+
+    ipcRenderer.on('hud-fps-toggle', (_e, data) => {
+      showFpsEnabled = !!(data && data.showFps);
+      if (showFpsEnabled) {
+        fpsBadge.classList.add('visible');
+        frameCount = 0;
+        lastTime = performance.now();
+        requestAnimationFrame(measureFps);
+      } else {
+        fpsBadge.classList.remove('visible');
+      }
+    });
+
+    function clearTimers() {
+      if (fadeStartTimer) { clearTimeout(fadeStartTimer); fadeStartTimer = null; }
+      if (fadeEndTimer) { clearTimeout(fadeEndTimer); fadeEndTimer = null; }
+    }
+
+    function hideAllIcons() {
+      Object.values(icons).forEach(el => {
+        if (el) {
+          el.classList.remove('visible', 'fading-out');
+        }
+      });
+    }
+
+    ipcRenderer.on('hud-update', (_e, data) => {
+      const nextState = (data && data.state) || 'idle';
+
+      // IMPORTANT: If already showing 'rec' and receiving another 'rec' tick, DO NOT touch DOM!
+      // This guarantees the recording icon stays rock-solid with zero blinking while recording!
+      if (nextState === 'rec' && currentState === 'rec') {
+        return;
+      }
+
+      clearTimers();
+      hideAllIcons();
+      currentState = nextState;
+
+      if (nextState === 'idle' || nextState === 'hide') {
+        return;
+      }
+
+      const target = icons[nextState];
+      if (!target) return;
+
+      void target.offsetWidth;
+      target.classList.add('visible');
+
+      // For 'saved', 'shot', and 'copy': stay solid for 1000ms (1 second), then smoothly fade out!
+      if (nextState !== 'rec') {
+        const delayMs = (data && typeof data.fadeDelayMs === 'number') ? data.fadeDelayMs : 1000;
+        fadeStartTimer = setTimeout(() => {
+          target.classList.add('fading-out');
+          fadeEndTimer = setTimeout(() => {
+            target.classList.remove('visible', 'fading-out');
+            if (currentState === nextState) currentState = 'idle';
+          }, 650);
+        }, delayMs);
+      }
+    });
+  </script>
+</body>
+</html>

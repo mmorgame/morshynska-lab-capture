@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: transparent;
+      cursor: default;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    }
+    canvas {
+      position: absolute;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      display: block;
+    }
+    /* Custom Pencil Cursor (hotspot at tip 2, 22) */
+    .cursor-pen {
+      cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'><path d='M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z' fill='%230B1528' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/><path d='m15 5 4 4' stroke='%2394A3B8' stroke-width='2'/></svg>") 2 22, default !important;
+    }
+    /* Custom Eraser Cursor (hotspot at center 12, 12) */
+    .cursor-eraser {
+      cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none'><rect x='4' y='4' width='16' height='16' rx='3' fill='rgba(148,163,184,0.22)' stroke='%23CBD5E1' stroke-width='1.8'/></svg>") 12 12, default !important;
+    }
+    #toolbar {
+      position: absolute;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 8px;
+      border-radius: 11px;
+      background: rgba(11, 16, 26, 0.94);
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      z-index: 50;
+      white-space: nowrap;
+      cursor: default !important;
+    }
+    .tool-btn {
+      padding: 5px 9px;
+      border-radius: 7px;
+      background: rgba(23, 32, 48, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #CBD5E1;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    }
+    .tool-btn:hover {
+      background: rgba(34, 47, 70, 0.92);
+      border-color: rgba(148, 163, 184, 0.35);
+      color: #F1F5F9;
+    }
+    .tool-btn.active {
+      background: rgba(30, 58, 76, 0.78);
+      border-color: rgba(56, 189, 248, 0.45);
+      color: #7DD3FC;
+    }
+    .icon-action-btn {
+      width: 31px;
+      height: 29px;
+      padding: 0;
+      border-radius: 7px;
+      background: rgba(23, 32, 48, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      color: #CBD5E1;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+    }
+    .icon-action-btn:hover {
+      background: rgba(30, 58, 76, 0.82);
+      border-color: rgba(56, 189, 248, 0.48);
+      color: #E0F2FE;
+    }
+    .icon-action-btn.primary {
+      background: rgba(22, 68, 86, 0.72);
+      border-color: rgba(56, 189, 248, 0.42);
+      color: #7DD3FC;
+    }
+    .icon-action-btn.primary:hover {
+      background: rgba(28, 86, 108, 0.88);
+      border-color: rgba(125, 211, 252, 0.65);
+      color: #FFFFFF;
+    }
+    .color-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 1.5px solid rgba(255, 255, 255, 0.24);
+      transition: transform 0.12s ease, border-color 0.12s ease;
+      flex-shrink: 0;
+    }
+    .color-dot.active {
+      border-color: #E2E8F0;
+      transform: scale(1.14);
+    }
+    /* RGB Rainbow Wheel Circle */
+    .rgb-dot {
+      position: relative;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      cursor: pointer;
+      background: conic-gradient(#ff0040, #ff9900, #ffee00, #00ff66, #00e5ff, #3b82f6, #a855f7, #ff0040);
+      border: 1.5px solid rgba(255, 255, 255, 0.28);
+      transition: transform 0.12s ease, border-color 0.12s ease;
+      flex-shrink: 0;
+    }
+    .rgb-dot.active {
+      border-color: #E2E8F0;
+      transform: scale(1.14);
+    }
+    /* Custom RGB Popover with "ОК" Button */
+    #rgb-popover {
+      position: absolute;
+      display: none;
+      flex-direction: column;
+      gap: 8px;
+      width: 214px;
+      padding: 10px;
+      border-radius: 11px;
+      background: rgba(11, 16, 26, 0.96);
+      border: 1px solid rgba(148, 163, 184, 0.32);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      z-index: 60;
+      cursor: default !important;
+    }
+    .rgb-spectrum {
+      width: 100%;
+      height: 18px;
+      border-radius: 6px;
+      appearance: none;
+      background: linear-gradient(90deg, #ff0000 0%, #ffff00 17%, #00ff00 33%, #00ffff 50%, #0000ff 67%, #ff00ff 83%, #ff0000 100%);
+      border: 1px solid rgba(255,255,255,0.22);
+      cursor: pointer;
+    }
+    .rgb-swatches {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 5px;
+    }
+    .rgb-swatch {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 1px solid rgba(255,255,255,0.22);
+      cursor: pointer;
+      transition: transform 0.1s ease;
+    }
+    .rgb-swatch:hover { transform: scale(1.15); border-color: #FFFFFF; }
+    .rgb-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      padding-top: 2px;
+    }
+    .rgb-preview-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 11px;
+      color: #CBD5E1;
+    }
+    .rgb-preview-box {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 1px solid rgba(255,255,255,0.35);
+    }
+    .rgb-ok-btn {
+      padding: 4px 14px;
+      border-radius: 6px;
+      background: rgba(28, 86, 108, 0.9);
+      border: 1px solid rgba(125, 211, 252, 0.55);
+      color: #FFFFFF;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .rgb-ok-btn:hover {
+      background: rgba(36, 108, 136, 1);
+    }
+    #dim-badge {
+      position: absolute;
+      display: none;
+      padding: 3px 7px;
+      border-radius: 6px;
+      background: rgba(11, 16, 26, 0.92);
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      color: #CBD5E1;
+      font-family: 'JetBrains Mono', Consolas, monospace;
+      font-size: 11px;
+      font-weight: 600;
+      pointer-events: none;
+      z-index: 40;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+  <div id="dim-badge">0 × 0 px</div>
+
+  <div id="toolbar">
+    <button class="tool-btn" data-tool="pen" onclick="selectTool('pen')" title="Карандаш">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+      <span>Карандаш</span>
+    </button>
+    <button class="tool-btn" data-tool="eraser" onclick="selectTool('eraser')" title="Ластик">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+      <span>Ластик</span>
+    </button>
+    <button class="tool-btn" data-tool="arrow" onclick="selectTool('arrow')" title="Стрелка">↗ Стрелка</button>
+    <button class="tool-btn" data-tool="circle" onclick="selectTool('circle')" title="Круг">◯ Круг</button>
+    <button class="tool-btn" data-tool="rect" onclick="selectTool('rect')" title="Рамка">▭ Рамка</button>
+
+    <div style="width:1px;height:16px;background:rgba(255,255,255,0.1);margin:0 3px;"></div>
+
+    <!-- 1 Default Red Dot + 1 RGB Palette Circle -->
+    <span id="dot-red" class="color-dot active" style="background:#EF4444;" onclick="selectPresetRed()" title="Красный"></span>
+    <span id="dot-rgb" class="rgb-dot" onclick="toggleRgbPopover(event)" title="Палитра RGB"></span>
+
+    <div style="width:1px;height:16px;background:rgba(255,255,255,0.1);margin:0 3px;"></div>
+
+    <button class="icon-action-btn" onclick="undoAction()" title="Отменить (Ctrl+Z)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+    </button>
+
+    <!-- Copy Icon Button (Enter / Ctrl+C) -->
+    <button class="icon-action-btn primary" onclick="commitCopy()" title="Скопировать в буфер обмена (Enter / Ctrl+C)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+      </svg>
+    </button>
+
+    <!-- Save to Folder Icon Button (Ctrl+S) -->
+    <button class="icon-action-btn" onclick="saveSelectionAsFile()" title="Сохранить в папку… (Ctrl+S)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+        <polyline points="17 21 17 13 7 13 7 21"/>
+        <polyline points="7 3 7 8 15 8"/>
+      </svg>
+    </button>
+
+    <button class="icon-action-btn" onclick="cancelOverlay()" title="Закрыть (Esc)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+
+  <!-- Custom RGB Palette Popover with explicit "ОК" button -->
+  <div id="rgb-popover" onclick="event.stopPropagation()">
+    <input id="rgb-hue-slider" type="range" min="0" max="360" value="195" class="rgb-spectrum" oninput="onHueSlide(this.value)" />
+    <div class="rgb-swatches">
+      <div class="rgb-swatch" style="background:#EF4444;" onclick="pickSwatch('#EF4444')"></div>
+      <div class="rgb-swatch" style="background:#F97316;" onclick="pickSwatch('#F97316')"></div>
+      <div class="rgb-swatch" style="background:#FACC15;" onclick="pickSwatch('#FACC15')"></div>
+      <div class="rgb-swatch" style="background:#10B981;" onclick="pickSwatch('#10B981')"></div>
+      <div class="rgb-swatch" style="background:#00F5D4;" onclick="pickSwatch('#00F5D4')"></div>
+      <div class="rgb-swatch" style="background:#38BDF8;" onclick="pickSwatch('#38BDF8')"></div>
+      <div class="rgb-swatch" style="background:#A855F7;" onclick="pickSwatch('#A855F7')"></div>
+      <div class="rgb-swatch" style="background:#FFFFFF;" onclick="pickSwatch('#FFFFFF')"></div>
+    </div>
+    <div class="rgb-footer">
+      <div class="rgb-preview-pill">
+        <span id="rgb-preview-box" class="rgb-preview-box" style="background:#38BDF8;"></span>
+        <span id="rgb-hex-text">#38BDF8</span>
+      </div>
+      <button class="rgb-ok-btn" onclick="confirmRgbPopover()">ОК</button>
+    </div>
+  </div>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const toolbar = document.getElementById('toolbar');
+    const dimBadge = document.getElementById('dim-badge');
+
+    // Offscreen background canvas (holds frozen screen at 1:1 physical pixels)
+    const bgCanvas = document.createElement('canvas');
+    const bgCtx = bgCanvas.getContext('2d');
+
+    // Offscreen annotation canvas (holds ONLY user drawings so Eraser never erases the screenshot!)
+    const annotCanvas = document.createElement('canvas');
+    const annotCtx = annotCanvas.getContext('2d');
+
+    let hasBg = false;
+    let dpr = window.devicePixelRatio || 1;
+    let sel = null; // { x, y, w, h } in CSS pixels
+    let isSelecting = false;
+    let startPt = null;
+
+    let currentTool = null; // null | 'pen' | 'eraser' | 'arrow' | 'circle' | 'rect'
+    let currentColor = '#EF4444';
+    let actions = [];
+    let activeAction = null;
+
+    function setupCanvases() {
+      dpr = window.devicePixelRatio || 1;
+      const physW = Math.round(window.innerWidth * dpr);
+      const physH = Math.round(window.innerHeight * dpr);
+      canvas.width = physW;
+      canvas.height = physH;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      annotCanvas.width = physW;
+      annotCanvas.height = physH;
+      annotCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    ipcRenderer.on('init-screenshot-raw', (_e, { bgra, width, height }) => {
+      sel = null;
+      actions = [];
+      activeAction = null;
+      selectTool(null);
+      toolbar.style.display = 'none';
+      dimBadge.style.display = 'none';
+      document.getElementById('rgb-popover').style.display = 'none';
+
+      setupCanvases();
+      bgCanvas.width = width;
+      bgCanvas.height = height;
+
+      const imgData = bgCtx.createImageData(width, height);
+      const dst = imgData.data;
+      const src = (bgra && bgra.byteLength !== undefined && bgra.buffer)
+        ? new Uint8Array(bgra.buffer, bgra.byteOffset || 0, bgra.byteLength)
+        : new Uint8Array(bgra);
+      const len = Math.min(dst.length, src.length);
+      for (let i = 0; i < len; i += 4) {
+        dst[i]     = src[i + 2];
+        dst[i + 1] = src[i + 1];
+        dst[i + 2] = src[i];
+        dst[i + 3] = 255;
+      }
+      bgCtx.putImageData(imgData, 0, 0);
+      hasBg = true;
+      rebuildAnnotationLayer();
+      render();
+    });
+
+    function updateCursorStyle() {
+      canvas.classList.remove('cursor-pen', 'cursor-eraser');
+      if (currentTool === 'pen') {
+        canvas.classList.add('cursor-pen');
+      } else if (currentTool === 'eraser') {
+        canvas.classList.add('cursor-eraser');
+      }
+    }
+
+    function selectTool(t) {
+      currentTool = t;
+      document.querySelectorAll('.tool-btn[data-tool]').forEach(b => {
+        b.classList.toggle('active', b.getAttribute('data-tool') === currentTool);
+      });
+      updateCursorStyle();
+    }
+
+    function selectPresetRed() {
+      currentColor = '#EF4444';
+      document.getElementById('dot-red').classList.add('active');
+      document.getElementById('dot-rgb').classList.remove('active');
+      document.getElementById('rgb-popover').style.display = 'none';
+      if (currentTool === 'eraser') selectTool('pen');
+    }
+
+    function hslToHex(h, s, l) {
+      l /= 100;
+      const a = s * Math.min(l, 1 - l) / 100;
+      const f = n => {
+        const k = (n + h / 30) % 12;
+        const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+        return Math.round(255 * color).toString(16).padStart(2, '0');
+      };
+      return `#${f(0)}${f(8)}${f(4)}`.toUpperCase();
+    }
+
+    function toggleRgbPopover(e) {
+      e.stopPropagation();
+      const pop = document.getElementById('rgb-popover');
+      if (pop.style.display === 'flex') {
+        pop.style.display = 'none';
+        return;
+      }
+      pop.style.display = 'flex';
+      const dotRect = document.getElementById('dot-rgb').getBoundingClientRect();
+      const popW = 214, popH = 104, pad = 8;
+      let px = Math.max(pad, Math.min(window.innerWidth - popW - pad, dotRect.left - 80));
+      let py = (dotRect.bottom + popH + 12 <= window.innerHeight) ? (dotRect.bottom + 8) : Math.max(pad, dotRect.top - popH - 8);
+      pop.style.left = `${px}px`;
+      pop.style.top = `${py}px`;
+    }
+
+    function onHueSlide(hueVal) {
+      const hex = hslToHex(parseInt(hueVal, 10) || 0, 100, 55);
+      selectRgbColor(hex);
+    }
+
+    function pickSwatch(hex) {
+      selectRgbColor(hex);
+    }
+
+    function confirmRgbPopover() {
+      document.getElementById('rgb-popover').style.display = 'none';
+    }
+
+    function selectRgbColor(hex) {
+      currentColor = hex;
+      document.getElementById('dot-red').classList.remove('active');
+      const rgbDot = document.getElementById('dot-rgb');
+      rgbDot.classList.add('active');
+      rgbDot.style.borderColor = hex;
+      const prevBox = document.getElementById('rgb-preview-box');
+      const hexTxt = document.getElementById('rgb-hex-text');
+      if (prevBox) prevBox.style.background = hex;
+      if (hexTxt) hexTxt.textContent = hex;
+      if (currentTool === 'eraser') selectTool('pen');
+    }
+
+    function undoAction() {
+      actions.pop();
+      rebuildAnnotationLayer();
+      render();
+      syncSelectionToClipboard();
+    }
+
+    function drawArrow(context, x1, y1, x2, y2, color) {
+      const headLen = 14;
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      context.strokeStyle = color;
+      context.fillStyle = color;
+      context.lineWidth = 3.2;
+      context.lineCap = 'round';
+      context.beginPath();
+      context.moveTo(x1, y1);
+      context.lineTo(x2, y2);
+      context.stroke();
+
+      context.beginPath();
+      context.moveTo(x2, y2);
+      context.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6));
+      context.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6));
+      context.closePath();
+      context.fill();
+    }
+
+    function applyActionToContext(context, a) {
+      context.save();
+      if (a.type === 'eraser') {
+        context.globalCompositeOperation = 'destination-out';
+        context.strokeStyle = 'rgba(0,0,0,1)';
+        context.lineWidth = 18;
+        context.lineCap = 'round';
+        context.lineJoin = 'round';
+        if (a.points.length === 1) {
+          context.beginPath();
+          context.arc(a.points[0].x, a.points[0].y, 9, 0, Math.PI * 2);
+          context.fill();
+        } else if (a.points.length > 1) {
+          context.beginPath();
+          context.moveTo(a.points[0].x, a.points[0].y);
+          for (let i = 1; i < a.points.length; i++) {
+            context.lineTo(a.points[i].x, a.points[i].y);
+          }
+          context.stroke();
+        }
+        context.restore();
+        return;
+      }
+
+      context.globalCompositeOperation = 'source-over';
+      context.strokeStyle = a.color;
+      context.lineWidth = 3.2;
+      context.lineCap = 'round';
+      context.lineJoin = 'round';
+
+      if (a.type === 'pen') {
+        if (a.points.length < 2) { context.restore(); return; }
+        context.beginPath();
+        context.moveTo(a.points[0].x, a.points[0].y);
+        for (let i = 1; i < a.points.length; i++) {
+          context.lineTo(a.points[i].x, a.points[i].y);
+        }
+        context.stroke();
+      } else if (a.type === 'arrow') {
+        drawArrow(context, a.x1, a.y1, a.x2, a.y2, a.color);
+      } else if (a.type === 'rect') {
+        context.strokeRect(
+          Math.min(a.x1, a.x2),
+          Math.min(a.y1, a.y2),
+          Math.abs(a.x2 - a.x1),
+          Math.abs(a.y2 - a.y1)
+        );
+      } else if (a.type === 'circle') {
+        const cx = (a.x1 + a.x2) / 2;
+        const cy = (a.y1 + a.y2) / 2;
+        const rx = Math.abs(a.x2 - a.x1) / 2;
+        const ry = Math.abs(a.y2 - a.y1) / 2;
+        context.beginPath();
+        context.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+        context.stroke();
+      }
+      context.restore();
+    }
+
+    function rebuildAnnotationLayer() {
+      annotCtx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      actions.forEach(a => applyActionToContext(annotCtx, a));
+      if (activeAction) applyActionToContext(annotCtx, activeAction);
+    }
+
+    function render() {
+      const W = window.innerWidth;
+      const H = window.innerHeight;
+      ctx.clearRect(0, 0, W, H);
+      if (!hasBg) return;
+
+      ctx.drawImage(bgCanvas, 0, 0, W, H);
+      ctx.fillStyle = 'rgba(4, 8, 15, 0.56)';
+      ctx.fillRect(0, 0, W, H);
+
+      if (sel && sel.w > 2 && sel.h > 2) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(sel.x, sel.y, sel.w, sel.h);
+        ctx.clip();
+        ctx.drawImage(bgCanvas, 0, 0, W, H);
+        ctx.drawImage(annotCanvas, 0, 0, W, H);
+        ctx.restore();
+
+        // Soft, non-glaring frame & corner markers
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.72)';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(sel.x, sel.y, sel.w, sel.h);
+
+        const corners = [
+          [sel.x, sel.y],
+          [sel.x + sel.w, sel.y],
+          [sel.x, sel.y + sel.h],
+          [sel.x + sel.w, sel.y + sel.h]
+        ];
+        ctx.fillStyle = 'rgba(203, 213, 225, 0.88)';
+        corners.forEach(([cx, cy]) => {
+          ctx.fillRect(cx - 3, cy - 3, 6, 6);
+        });
+      }
+    }
+
+    function positionElementsWithinViewport() {
+      if (!sel) return;
+      const W = window.innerWidth;
+      const H = window.innerHeight;
+      const pad = 8;
+
+      // 1. Clamp Dimension Badge inside screen
+      const badgeW = dimBadge.offsetWidth || 96;
+      const badgeH = dimBadge.offsetHeight || 24;
+      let bx = Math.max(pad, Math.min(W - badgeW - pad, sel.x));
+      let by = sel.y - badgeH - 6;
+      if (by < pad) {
+        by = Math.min(H - badgeH - pad, sel.y + 8);
+      }
+      dimBadge.style.left = `${bx}px`;
+      dimBadge.style.top = `${by}px`;
+
+      // 2. Clamp Toolbar inside screen (works near top, bottom, left, right, or full-screen selection!)
+      if (toolbar.style.display === 'flex') {
+        const tbW = toolbar.offsetWidth || 470;
+        const tbH = toolbar.offsetHeight || 42;
+
+        // Horizontal: align to right edge of selection, clamped within [pad, W - tbW - pad]
+        let tx = sel.x + sel.w - tbW;
+        tx = Math.max(pad, Math.min(W - tbW - pad, tx));
+
+        // Vertical: prefer below selection -> then above selection -> then inside bottom-right of selection
+        let ty;
+        if (sel.y + sel.h + tbH + 10 <= H - pad) {
+          ty = sel.y + sel.h + 8;
+        } else if (sel.y - tbH - 10 >= pad) {
+          ty = sel.y - tbH - 8;
+        } else {
+          ty = Math.max(pad, Math.min(H - tbH - pad, sel.y + sel.h - tbH - 10));
+        }
+        toolbar.style.left = `${tx}px`;
+        toolbar.style.top = `${ty}px`;
+      }
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return;
+      document.getElementById('rgb-popover').style.display = 'none';
+      const x = e.clientX;
+      const y = e.clientY;
+
+      if (sel && currentTool && x >= sel.x && x <= sel.x + sel.w && y >= sel.y && y <= sel.y + sel.h) {
+        if (currentTool === 'pen' || currentTool === 'eraser') {
+          activeAction = { type: currentTool, color: currentColor, points: [{ x, y }] };
+        } else {
+          activeAction = { type: currentTool, color: currentColor, x1: x, y1: y, x2: x, y2: y };
+        }
+        rebuildAnnotationLayer();
+        render();
+        return;
+      }
+
+      isSelecting = true;
+      actions = [];
+      rebuildAnnotationLayer();
+      startPt = { x, y };
+      sel = { x, y, w: 0, h: 0 };
+      toolbar.style.display = 'none';
+      dimBadge.style.display = 'block';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      const x = e.clientX;
+      const y = e.clientY;
+
+      if (activeAction) {
+        if (activeAction.type === 'pen' || activeAction.type === 'eraser') {
+          activeAction.points.push({ x, y });
+        } else {
+          activeAction.x2 = x;
+          activeAction.y2 = y;
+        }
+        rebuildAnnotationLayer();
+        render();
+        return;
+      }
+
+      if (!isSelecting || !startPt) return;
+      sel = {
+        x: Math.min(startPt.x, x),
+        y: Math.min(startPt.y, y),
+        w: Math.abs(x - startPt.x),
+        h: Math.abs(y - startPt.y)
+      };
+      const realW = Math.round(sel.w * dpr);
+      const realH = Math.round(sel.h * dpr);
+      dimBadge.textContent = `${realW} × ${realH} px`;
+      positionElementsWithinViewport();
+      render();
+    });
+
+    function buildSelectionPayload() {
+      if (!hasBg || !sel || sel.w < 4 || sel.h < 4) return null;
+      const outCanvas = document.createElement('canvas');
+      const outW = Math.max(1, Math.round(sel.w * dpr));
+      const outH = Math.max(1, Math.round(sel.h * dpr));
+      outCanvas.width = outW;
+      outCanvas.height = outH;
+      const octx = outCanvas.getContext('2d');
+      octx.scale(dpr, dpr);
+      octx.translate(-sel.x, -sel.y);
+      octx.drawImage(bgCanvas, 0, 0, window.innerWidth, window.innerHeight);
+      octx.drawImage(annotCanvas, 0, 0, window.innerWidth, window.innerHeight);
+
+      const dataUrl = outCanvas.toDataURL('image/png');
+      return { dataUrl, outW, outH };
+    }
+
+    async function syncSelectionToClipboard() {
+      const built = buildSelectionPayload();
+      if (!built) return null;
+      // Also use Chromium's native ClipboardItem API while window is focused
+      try {
+        outCanvasToClipboardBlob(built.dataUrl);
+      } catch (e) {}
+      ipcRenderer.send('write-clipboard-png', {
+        dataUrl: built.dataUrl,
+        width: built.outW,
+        height: built.outH
+      });
+      return built;
+    }
+
+    function outCanvasToClipboardBlob(dataUrl) {
+      try {
+        if (!navigator.clipboard || !window.ClipboardItem) return;
+        const b64 = dataUrl.split(',')[1];
+        const bin = atob(b64);
+        const arr = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        const blob = new Blob([arr], { type: 'image/png' });
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).catch(() => {});
+      } catch (e) {}
+    }
+
+    window.addEventListener('mouseup', () => {
+      if (activeAction) {
+        actions.push(activeAction);
+        activeAction = null;
+        rebuildAnnotationLayer();
+        render();
+        syncSelectionToClipboard();
+        return;
+      }
+      if (isSelecting) {
+        isSelecting = false;
+        if (sel && sel.w > 10 && sel.h > 10) {
+          toolbar.style.display = 'flex';
+          positionElementsWithinViewport();
+          selectTool('pen');
+          syncSelectionToClipboard();
+        }
+      }
+    });
+
+    async function commitCopy() {
+      const built = buildSelectionPayload();
+      if (!built) {
+        cancelOverlay();
+        return;
+      }
+      outCanvasToClipboardBlob(built.dataUrl);
+      await ipcRenderer.invoke('copy-overlay-finish', {
+        dataUrl: built.dataUrl,
+        width: built.outW,
+        height: built.outH
+      });
+    }
+
+    async function saveSelectionAsFile() {
+      const built = buildSelectionPayload();
+      if (!built) return;
+      outCanvasToClipboardBlob(built.dataUrl);
+      await ipcRenderer.invoke('copy-overlay-save-as', {
+        dataUrl: built.dataUrl,
+        width: built.outW,
+        height: built.outH
+      });
+    }
+
+    async function cancelOverlay() {
+      const hadSelection = !!(sel && sel.w > 10 && sel.h > 10);
+      let outW = 0, outH = 0, dataUrl = '';
+      if (hadSelection) {
+        const built = buildSelectionPayload();
+        if (built) {
+          outW = built.outW;
+          outH = built.outH;
+          dataUrl = built.dataUrl;
+          outCanvasToClipboardBlob(built.dataUrl);
+        }
+      }
+      await ipcRenderer.invoke('copy-overlay-cancel', { hadSelection, dataUrl, width: outW, height: outH });
+    }
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        cancelOverlay();
+      } else if (e.key === 'Enter' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c')) {
+        commitCopy();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        saveSelectionAsFile();
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+        undoAction();
+      }
+    });
+  </script>
+</body>
+</html>

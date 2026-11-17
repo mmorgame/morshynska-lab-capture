@@ -1,0 +1,64 @@
+{
+  "name": "morshynska-lab-capture",
+  "productName": "Morshynska Lab Capture",
+  "version": "1.0.0",
+  "description": "Morshynska Lab Capture Studio — High-FPS Window & Region Recorder + Screenshot Suite",
+  "main": "main.js",
+  "author": {
+    "name": "Morshynska Lab",
+    "email": "wdayscraft@gmail.com"
+  },
+  "license": "PROPRIETARY",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "com.morshynskalab.capture",
+    "productName": "Morshynska Lab Capture",
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "assets/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "bin/ffmpeg.exe",
+        "to": "bin/ffmpeg.exe"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Morshynska Lab Capture",
+      "installerIcon": "assets/icon.ico",
+      "uninstallerIcon": "assets/icon.ico"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "mmorgame",
+        "repo": "morshynska-lab-capture",
+        "private": true
+      }
+    ]
+  },
+  "devDependencies": {
+    "electron": "^41.0.0",
+    "electron-builder": "^26.8.1"
+  }
+}
